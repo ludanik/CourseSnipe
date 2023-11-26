@@ -3,6 +3,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.firefox.options import Options
+
 from dotenv import load_dotenv
 import pickle, time, os
 import functions
@@ -174,12 +177,39 @@ def loadPage(webDriver, url):
 
     webDriver.get(url)
 
-def isFull(webDriver, url):
+def isFull(webDriver):
     findSeats = webDriver.find_element(By.XPATH,"/html/body/div[1]/div[3]/div[4]/div/table/tbody/tr/td[2]/div[5]/div[3]/div[4]/div[2]/div[1]/div[1]/div/div/div/label/div/div[1]/table/tbody/tr[1]/td[2]/span[1]")
+    print(findSeats.text)
     return "Full" in findSeats.text
 
-driver = webdriver.Firefox()
-driver2 = webdriver.Firefox()
+def loadREM(webDriver):
+    webDriver.get("https://wrem.sis.yorku.ca/Apps/WebObjects/REM.woa/wa/DirectAction/rem")
+    select_element = WebDriverWait(webDriver, 60).until(EC.visibility_of_element_located((By.NAME, "5.5.1.27.1.11.0")))
+
+    # Create a Select object
+    select = Select(select_element)
+    select.select_by_value("3")
+
+    time.sleep(3)
+
+    webDriver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table/tbody/tr[3]/td[2]/input').click()
+    time.sleep(3)
+
+def loadVSB(webDriver, cat):
+    webDriver.get("https://schedulebuilder.yorku.ca/vsb/")
+    webDriver.find_element(By.XPATH, '//*[@id="code_number"]').sendkeys(cat)
+    webDriver.find_element(By.XPATH, '//*[@id="addCourseButton"]').click()
+
+
+options = Options()
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+
+path = "/snap/bin/geckodriver"  # specify the path to your geckodriver
+driver_service = Service(executable_path=path)
+
+driver = webdriver.Firefox(options=options, service=driver_service)
+
 watchlist = [["C57E01", 'A']]
 ''' 
     X44V01 - EECS 3221 A - What I actually want
@@ -197,18 +227,7 @@ watchlist = [["C57E01", 'A']]
 
 loadPage(driver, "https://wrem.sis.yorku.ca/Apps/WebObjects/REM.woa/wa/DirectAction/rem")
 
-select_element = WebDriverWait(driver, 60).until(EC.visibility_of_element_located((By.NAME, "5.5.1.27.1.11.0")))
-
-# Create a Select object
-select = Select(select_element)
-select.select_by_value("3")
-
-time.sleep(3)
-
-driver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table/tbody/tr[3]/td[2]/input').click()
-time.sleep(3)
-
-vsbUrl = "https://schedulebuilder.yorku.ca/vsb/criteria.jsp?access=0&lang=en&tip=1&page=results&scratch=0&term=2023102119&sort=none&filters=iiiiiiii&bbs=&ds=&cams=0_1_2_3_4_5_6_7_8&locs=any&course_0_0=LE-EECS-3214-3.00-EN-&sa_0_0=&cs_0_0=--2023087_C57E01--&cpn_0_0=&csn_0_0=&ca_0_0=&dropdown_0_0=us_--2023087_C57E01--&ig_0_0=0&rq_0_0="
+loadREM(driver)
 
 loadPage(driver2, vsbUrl)
 
@@ -216,6 +235,7 @@ time.sleep(4)
 
 #/html/body/div[1]/div[3]/div[4]/div/table/tbody/tr/td[2]/div[5]/div[3]/div[4]/div[2]/div[1]/div[1]/div/div/div/label/div/div[1]/table/tbody/tr[1]/td[2]/span[1]
 enrolled = False
+counter = 0
 for entry in watchlist:
     cat, action = entry
     if action == 'A': 
@@ -232,7 +252,11 @@ for entry in watchlist:
                 alert = driver.switch_to.alert
                 alert.accept()
                 print("Course is full, pinging again in 30 seconds")
-            time.sleep(25)
+            time.sleep(5)
+            counter = counter + 1
+            if counter % 1 == 0 and counter != 0:
+                counter = 0
+                loadREM(driver)
 
     time.sleep(4)
 
