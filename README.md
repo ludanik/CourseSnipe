@@ -1,1 +1,1 @@
-# yorku-enroll
+# CourseSnipe
