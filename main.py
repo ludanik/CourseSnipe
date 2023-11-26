@@ -155,7 +155,7 @@ def transfer_course(cat):
             print(string)
         #print result
 
-def loadPage(webDriver, url):
+def login(webDriver, url):
     webDriver.set_window_size(1200, 1000)
     webDriver.get(url)
     #fill username
@@ -178,9 +178,12 @@ def loadPage(webDriver, url):
     webDriver.get(url)
 
 def isFull(webDriver):
-    findSeats = webDriver.find_element(By.XPATH,"/html/body/div[1]/div[3]/div[4]/div/table/tbody/tr/td[2]/div[5]/div[3]/div[4]/div[2]/div[1]/div[1]/div/div/div/label/div/div[1]/table/tbody/tr[1]/td[2]/span[1]")
-    print(findSeats.text)
-    return "Full" in findSeats.text
+    time.sleep(3)
+    try:
+        webDriver.find_element(By.CLASS_NAME, "seatText")
+        return False
+    except:
+        return True
 
 def loadREM(webDriver):
     webDriver.get("https://wrem.sis.yorku.ca/Apps/WebObjects/REM.woa/wa/DirectAction/rem")
@@ -197,20 +200,18 @@ def loadREM(webDriver):
 
 def loadVSB(webDriver, cat):
     webDriver.get("https://schedulebuilder.yorku.ca/vsb/")
-    webDriver.find_element(By.XPATH, '//*[@id="code_number"]').sendkeys(cat)
+    time.sleep(3)
+    webDriver.find_element(By.XPATH, '//*[@id="code_number"]').send_keys(cat)
+    time.sleep(2)
+    webDriver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[4]/div/table/tbody/tr/td[1]/div[4]/div[1]/div[2]/div[2]/div[3]/label').click()
+    time.sleep(2)
     webDriver.find_element(By.XPATH, '//*[@id="addCourseButton"]').click()
+    time.sleep(3)
+    print(webDriver.current_url)
+    return webDriver.current_url
 
 
-options = Options()
-options.add_argument('--no-sandbox')
-options.add_argument('--disable-dev-shm-usage')
-
-path = "/snap/bin/geckodriver"  # specify the path to your geckodriver
-driver_service = Service(executable_path=path)
-
-driver = webdriver.Firefox(options=options, service=driver_service)
-
-watchlist = [["C57E01", 'A']]
+watchlist = [["C57E01", 'A'], ['H27G01', 'A']]
 ''' 
     X44V01 - EECS 3221 A - What I actually want
     G84J01 - MATH 1014 A - An example of a successful add.
@@ -225,40 +226,44 @@ watchlist = [["C57E01", 'A']]
         3101 M (X87W02) TO 3101 Z (S81Q02)
 '''
 
-loadPage(driver, "https://wrem.sis.yorku.ca/Apps/WebObjects/REM.woa/wa/DirectAction/rem")
 
-loadREM(driver)
 
-loadPage(driver2, vsbUrl)
+options = Options()
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+
+path = "/snap/bin/geckodriver"  # specify the path to your geckodriver
+driver_service = Service(executable_path=path)
+
+driver = webdriver.Firefox(options=options, service=driver_service)
+
+login(driver, "https://schedulebuilder.yorku.ca/vsb/")
+
+linkDict = {}
+for entry in watchlist:
+    cat, action = entry
+    linkDict[cat] = loadVSB(driver, cat)
+
 
 time.sleep(4)
 
 #/html/body/div[1]/div[3]/div[4]/div/table/tbody/tr/td[2]/div[5]/div[3]/div[4]/div[2]/div[1]/div[1]/div/div/div/label/div/div[1]/table/tbody/tr[1]/td[2]/span[1]
-enrolled = False
-counter = 0
-for entry in watchlist:
-    cat, action = entry
-    if action == 'A': 
-        while (not enrolled):
-            full = isFull(driver2, "https://schedulebuilder.yorku.ca/vsb/criteria.jsp?access=0&lang=en&tip=1&page=results&scratch=0&term=2023102119&sort=none&filters=iiiiiiii&bbs=&ds=&cams=0_1_2_3_4_5_6_7_8&locs=any&course_0_0=LE-EECS-3214-3.00-EN-&sa_0_0=&cs_0_0=--2023087_C57E01--&cpn_0_0=&csn_0_0=&ca_0_0=&dropdown_0_0=us_--2023087_C57E01--&ig_0_0=0&rq_0_0=")
+while (len(watchlist) != 0):
+    for entry in watchlist:
+        cat, action = entry
+        if action == 'A':
+            driver.get(linkDict[cat])
+            full = isFull(driver)
             if (not full):
-                add_course(cat)
-                enrolled = True
-                print("Successfully enrolled! Congratulations! Please note adding a course has financial consequences.")
-            else:
-                driver2.get(vsbUrl)
-                driver.refresh()
-                time.sleep(5)
-                alert = driver.switch_to.alert
-                alert.accept()
-                print("Course is full, pinging again in 30 seconds")
-            time.sleep(5)
-            counter = counter + 1
-            if counter % 1 == 0 and counter != 0:
-                counter = 0
+                print(f"Attempting to enroll into {cat}")
                 loadREM(driver)
+                add_course(cat)
+                print("Successfully enrolled! Congratulations! Please note adding a course has financial consequences.")
+                watchlist.remove(entry)
+            else:
+                print(f"Course {cat} is full, pinging again in 30 seconds")
+                time.sleep(5)
 
-    time.sleep(4)
+        time.sleep(10)
 
 driver.quit()
-driver2.quit()
