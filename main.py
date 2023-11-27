@@ -173,12 +173,16 @@ def login(webDriver, url):
     time.sleep(3)
 
     #duo 2fa
+    WebDriverWait(driver, 20).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//iframe[@id='duo_iframe']")))
+    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div[4]/div/div/div/button'))).click()
+    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[2]/div/label/input"))).click()
+    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[1]/fieldset/div[1]/button"))).click()
     time.sleep(10)
 
     webDriver.get(url)
 
 def isFull(webDriver):
-    time.sleep(3)
+    time.sleep(5)
     try:
         webDriver.find_element(By.CLASS_NAME, "seatText")
         return False
@@ -240,6 +244,7 @@ driver = webdriver.Firefox(options=options, service=driver_service)
 login(driver, "https://schedulebuilder.yorku.ca/vsb/")
 
 linkDict = {}
+
 for entry in watchlist:
     cat, action = entry
     linkDict[cat] = loadVSB(driver, cat)
@@ -258,12 +263,11 @@ while (len(watchlist) != 0):
                 print(f"Attempting to enroll into {cat}")
                 loadREM(driver)
                 add_course(cat)
-                print("Successfully enrolled! Congratulations! Please note adding a course has financial consequences.")
                 watchlist.remove(entry)
             else:
-                print(f"Course {cat} is full, pinging again in 30 seconds")
+                print(f"Course {cat} is full, pinging again in 60 seconds")
                 time.sleep(5)
 
-        time.sleep(10)
+        time.sleep(60)
 
 driver.quit()
