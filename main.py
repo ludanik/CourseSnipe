@@ -155,7 +155,7 @@ def transfer_course(cat):
             print(string)
         #print result
 
-def login(webDriver, url):
+def login(webDriver, url, noDuo=False):
     webDriver.set_window_size(1200, 1000)
     webDriver.get(url)
     #fill username
@@ -173,11 +173,12 @@ def login(webDriver, url):
     time.sleep(3)
 
     #duo 2fa
-    WebDriverWait(driver, 20).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//iframe[@id='duo_iframe']")))
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div[4]/div/div/div/button'))).click()
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[2]/div/label/input"))).click()
-    WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[1]/fieldset/div[1]/button"))).click()
-    time.sleep(10)
+    if (not noDuo):
+        WebDriverWait(driver, 20).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//iframe[@id='duo_iframe']")))
+        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div[4]/div/div/div/button'))).click()
+        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[2]/div/label/input"))).click()
+        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[1]/fieldset/div[1]/button"))).click()
+        time.sleep(10)
 
     webDriver.get(url)
 
@@ -215,7 +216,7 @@ def loadVSB(webDriver, cat):
     return webDriver.current_url
 
 
-watchlist = [["C57E01", 'A'], ['H27G01', 'A']]
+watchlist = [["C57E01", 'A']]
 ''' 
     X44V01 - EECS 3221 A - What I actually want
     G84J01 - MATH 1014 A - An example of a successful add.
@@ -267,7 +268,13 @@ while (len(watchlist) != 0):
             else:
                 print(f"Course {cat} is full, pinging again in 60 seconds")
                 time.sleep(5)
-
+        try:
+            username = driver.find_element(By.XPATH, "//*[@id='mli']")
+            password = driver.find_element(By.XPATH, "//*[@id='password']")
+            print("Booted from VSB, relogging")
+            login(driver, "https://schedulebuilder.yorku.ca/vsb/", True)
+        except:
+            pass
         time.sleep(50)
 
 driver.quit()
