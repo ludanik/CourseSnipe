@@ -268,6 +268,6 @@ while (len(watchlist) != 0):
                 print(f"Course {cat} is full, pinging again in 60 seconds")
                 time.sleep(5)
 
-        time.sleep(60)
+        time.sleep(50)
 
 driver.quit()
