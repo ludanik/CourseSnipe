@@ -156,6 +156,7 @@ def transfer_course(cat):
         #print result
 
 def login(webDriver, url, noDuo=False):
+    print("Logging in...")
     webDriver.set_window_size(1200, 1000)
     webDriver.get(url)
     #fill username
@@ -174,12 +175,14 @@ def login(webDriver, url, noDuo=False):
 
     #duo 2fa
     if (not noDuo):
+        print("Trying to authenticate...")
         WebDriverWait(driver, 20).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//iframe[@id='duo_iframe']")))
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div[4]/div/div/div/button'))).click()
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[2]/div/label/input"))).click()
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[1]/fieldset/div[1]/button"))).click()
+        print("Authentication request sent, press twice (10s)")
         time.sleep(10)
-
+        
     webDriver.get(url)
 
 def isFull(webDriver):
@@ -191,6 +194,7 @@ def isFull(webDriver):
         return True
 
 def loadREM(webDriver):
+    print("Loading REM...")
     webDriver.get("https://wrem.sis.yorku.ca/Apps/WebObjects/REM.woa/wa/DirectAction/rem")
     select_element = WebDriverWait(webDriver, 60).until(EC.visibility_of_element_located((By.NAME, "5.5.1.27.1.11.0")))
 
@@ -204,6 +208,7 @@ def loadREM(webDriver):
     time.sleep(3)
 
 def loadVSB(webDriver, cat):
+    print("Loading VSB...")
     webDriver.get("https://schedulebuilder.yorku.ca/vsb/")
     time.sleep(3)
     webDriver.find_element(By.XPATH, '//*[@id="code_number"]').send_keys(cat)
@@ -234,6 +239,7 @@ watchlist = [["C57E01", 'A']]
 
 
 options = Options()
+options.add_argument("--headless")
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 
@@ -246,6 +252,7 @@ login(driver, "https://schedulebuilder.yorku.ca/vsb/")
 
 linkDict = {}
 
+print("Reading course code URLS...")
 for entry in watchlist:
     cat, action = entry
     linkDict[cat] = loadVSB(driver, cat)
