@@ -15,23 +15,6 @@ load_dotenv()
 send_sms_message = False
 send_email_message = False
 
-def erase_cookie():
-    open('cookies.pickle', 'w').close()
-
-def write_cookie():
-    with open("cookies.pickle", "wb") as file:
-        pickle.dump(driver.get_cookies(), file)
-
-def load_cookie():
-    with open("cookies.pickle", 'rb') as cookiesfile:
-        cookies = pickle.load(cookiesfile)
-        # if cookies:
-        #     print("in if cookies")
-        #     trigger_manual_2fa = False
-
-        for cookie in cookies:
-            driver.add_cookie(cookie)
-
 def add_course(cat):
     #add button
     driver.find_element(By.NAME, '5.1.27.1.23').click()
