@@ -1,5 +1,18 @@
 To do:
 CLI interface (add GUI later, probably not necessary)
+	-headless option, enabled by default
+	-option to list courses
+	
+	-option to add course
+	-option to transfer course
+	-option to remove course
+	
+	-option to add email
+	-option to set user
+	-option to set password
+	-option to input path (so no need to guess)
+
 Integrate transfer functionality
 Email/SMS upon course enrollment (probably just email)
-Add support for Fedora, Windows, Mac?
+Add support for Fedora, Windows, Mac? 
+	- just need to find path of geckodriver automatically

@@ -7,7 +7,7 @@ from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
 
 from dotenv import load_dotenv
-import pickle, time, os
+import time, os
 import functions
 
 load_dotenv()
@@ -222,7 +222,7 @@ watchlist = [["C57E01", 'A']]
 
 
 options = Options()
-options.add_argument("--headless")
+#options.add_argument("--headless")
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 
@@ -243,7 +243,6 @@ for entry in watchlist:
 
 time.sleep(4)
 
-#/html/body/div[1]/div[3]/div[4]/div/table/tbody/tr/td[2]/div[5]/div[3]/div[4]/div[2]/div[1]/div[1]/div/div/div/label/div/div[1]/table/tbody/tr[1]/td[2]/span[1]
 while (len(watchlist) != 0):
     for entry in watchlist:
         cat, action = entry
