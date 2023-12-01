@@ -1,3 +1,4 @@
+import random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
@@ -5,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
+from datetime import datetime
 
 from dotenv import load_dotenv
 import time, os
@@ -15,6 +17,8 @@ load_dotenv()
 send_sms_message = False
 send_email_message = False
 
+# Author: 
+#
 def add_course(cat):
     #add button
     driver.find_element(By.NAME, '5.1.27.1.23').click()
@@ -76,6 +80,8 @@ def add_course(cat):
         else:
             print(string)
 
+
+# Author: 
 def transfer_course(cat):
     #transfer button
     driver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table[4]/tbody/tr[1]/td[3]/div/input').click()
@@ -169,6 +175,7 @@ def login(webDriver, url, noDuo=False):
     webDriver.get(url)
 
 def isFull(webDriver):
+    #courseDiv= WebDriverWait(webDriver, 60).until(EC.visibility_of_element_located((By.CLASS_NAME, "")))
     time.sleep(5)
     try:
         webDriver.find_element(By.CLASS_NAME, "seatText")
@@ -235,14 +242,14 @@ login(driver, "https://schedulebuilder.yorku.ca/vsb/")
 
 linkDict = {}
 
-print("Reading course code URLS...")
+print("Fetching course code URLs...")
 for entry in watchlist:
     cat, action = entry
     linkDict[cat] = loadVSB(driver, cat)
 
 
 time.sleep(4)
-
+startTime = datetime.now().time()
 while (len(watchlist) != 0):
     for entry in watchlist:
         cat, action = entry
@@ -264,6 +271,14 @@ while (len(watchlist) != 0):
             login(driver, "https://schedulebuilder.yorku.ca/vsb/", True)
         except:
             pass
-        time.sleep(50)
+        try:
+            banned = ( driver.find_element(By.XPATH, '/html/body/h1').text == "Forbidden" )
+            if (banned):
+                print(f"Banned from VSB, total duration of session {datetime.now().time() - startTime}")
+                driver.quit()
+                exit()
+        except:
+            pass
+        time.sleep(200 + random.randint(-10,20)) # Randomness to make behaviour look human
 
 driver.quit()

@@ -9,7 +9,7 @@ load_dotenv()
 def send_email(message):
     email_sender = os.getenv("EMAIL_SENDER")
     email_password = os.getenv("EMAIL_PASSWORD")
-    email_receiver = 'mickey.byalsky@gmail.com'
+    email_receiver = '@gmail.com'
 
     subject = 'You Got Your Course!'
     body = message
