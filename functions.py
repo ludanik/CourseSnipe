@@ -1,10 +1,13 @@
 from selenium.webdriver.support import expected_conditions as EC
 from dotenv import load_dotenv
-from twilio.rest import Client
 from email.message import EmailMessage
 import  ssl, smtplib, os, email.utils
 
 load_dotenv()
+
+
+# Author: Mickey Byalsky
+# https://github.com/mickeybyalsky
 
 def send_email(message):
     email_sender = os.getenv("EMAIL_SENDER")

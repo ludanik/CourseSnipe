@@ -7,7 +7,7 @@ CLI interface (add GUI later, probably not necessary)
 	-option to transfer course
 	-option to remove course
 	
-	-option to add email
+	-option to set email
 	-option to set user
 	-option to set password
 	-option to input path (so no need to guess)

@@ -1,4 +1,15 @@
+# Click documentation:
+# https://click.palletsprojects.com/en/8.1.x/#documentation
+#
+# Setuptools:
+# https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
+#
+# Start virtual environment:
+# . .venv/bin/activate
+
+from pathlib import Path
 import random
+import click
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
@@ -9,6 +20,7 @@ from selenium.webdriver.firefox.options import Options
 from datetime import datetime
 
 from dotenv import load_dotenv
+from dotenv import set_key
 import time, os
 import functions
 
@@ -17,9 +29,7 @@ load_dotenv()
 send_sms_message = False
 send_email_message = False
 
-# Author: 
-#
-def add_course(cat):
+def add_course(cat, driver):
     #add button
     driver.find_element(By.NAME, '5.1.27.1.23').click()
     time.sleep(3)
@@ -33,7 +43,7 @@ def add_course(cat):
     #IF CAT CODE IS <6 CHARS
     try:
         result = driver.find_element(By.CLASS_NAME, 'alert')
-        print(result.text)
+        click.echo(result.text)
         driver.find_element(By.XPATH,'/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table[3]/tbody/tr/td/span/a').click()
     except NoSuchElementException:
 
@@ -51,9 +61,9 @@ def add_course(cat):
         if "The course has been successfully added." in string:
             curr_course = driver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table[2]/tbody/tr[4]/td[2]/span').text
             cur_course = curr_course[3:12] + " "+ curr_course[21:22]
-            #print(f"The course {cur_course} has been successfully added.\nTHIS ACTION HAS FINANCIAL IMPACT TO YOUR FINANCIAL ACCOUNT\nVISIT https://sfs.yorku.ca FOR UPDATED TUTION INFORMATION.")
+            #click.echo(f"The course {cur_course} has been successfully added.\nTHIS ACTION HAS FINANCIAL IMPACT TO YOUR FINANCIAL ACCOUNT\nVISIT https://sfs.yorku.ca FOR UPDATED TUTION INFORMATION.")
             body=f"\nThe course {cur_course} has been successfully added.\nTHIS ACTION HAS FINANCIAL IMPACT TO YOUR STUDENT FINANCIAL ACCOUNT.VISIT HTTPS://SFS.YORKU.CA FOR UPDATED TUTION INFORMATION."
-            print(body)
+            click.echo(body)
             time.sleep(3)
             driver.find_element(By.NAME, '5.1.27.23.9').click()
             return 0
@@ -63,7 +73,7 @@ def add_course(cat):
             time.sleep(3)
             curr_course = driver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table[2]/tbody/tr[5]/td[2]/span').text
             cur_course = curr_course[3:12] + " "+ curr_course[21:22]
-            print(f"The course {cur_course} has not been added. The course you are trying to add is full.")
+            click.echo(f"The course {cur_course} has not been added. The course you are trying to add is full.")
             time.sleep(3)
             driver.find_element(By.NAME, '5.1.27.27.11').click()
             return -1
@@ -72,17 +82,15 @@ def add_course(cat):
         elif "The spaces in this course are reserved." in string:
             curr_course = driver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table[2]/tbody/tr[5]/td[2]/span').text
             cur_course = curr_course[3:12] + " "+ curr_course[21:22]
-            print(f"The course {cur_course} has not been added. The spaces in this course are reserved.")
+            click.echo(f"The course {cur_course} has not been added. The spaces in this course are reserved.")
             time.sleep(3)
             driver.find_element(By.NAME, '5.1.27.27.11').click()
             return -1
 
         else:
-            print(string)
+            click.echo(string)
 
-
-# Author: 
-def transfer_course(cat):
+def transfer_course(cat, driver):
     #transfer button
     driver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table[4]/tbody/tr[1]/td[3]/div/input').click()
     time.sleep(3)
@@ -96,7 +104,7 @@ def transfer_course(cat):
         # The catalogue number for the course you wish to transfer does not match the existing course. Please try again. 
     try:
         result = driver.find_element(By.CLASS_NAME, 'alert')
-        print(result.text)
+        click.echo(result.text)
         time.sleep(3)
         driver.find_element(By.XPATH,'/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table[4]/tbody/tr/td/span/a').click()
         
@@ -128,7 +136,7 @@ def transfer_course(cat):
         elif "The spaces in this course are reserved." in string:
             curr_course = driver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table[2]/tbody/tr[5]/td[2]/span').text       
             cur_course = curr_course[3:12] + " "+ curr_course[21:22]
-            print(f"The course {cur_course} has not been transfered to.\nThe spaces in this course are reserved.")
+            click.echo(f"The course {cur_course} has not been transfered to.\nThe spaces in this course are reserved.")
             time.sleep(3)
             driver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table[2]/tbody/tr[8]/td[2]/input').click() #continue button 
         
@@ -137,15 +145,15 @@ def transfer_course(cat):
         elif "The course you are trying to add is full." in string: 
             curr_course = driver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table[2]/tbody/tr[5]/td[2]/span').text       
             cur_course = curr_course[3:12] + " "+ curr_course[21:22]
-            print(f"The course {cur_course} has not been transfered to - The course is full.")
+            click.echo(f"The course {cur_course} has not been transfered to - The course is full.")
             time.sleep(3)
             driver.find_element(By.NAME, '5.1.27.23.11').click()
         else:
-            print(string)
-        #print result
+            click.echo(string)
+        #click.echo result
 
 def login(webDriver, url, noDuo=False):
-    print("Logging in...")
+    click.echo("Logging in...")
     webDriver.set_window_size(1200, 1000)
     webDriver.get(url)
     #fill username
@@ -164,12 +172,12 @@ def login(webDriver, url, noDuo=False):
 
     #duo 2fa
     if (not noDuo):
-        print("Trying to authenticate...")
-        WebDriverWait(driver, 20).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//iframe[@id='duo_iframe']")))
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div[4]/div/div/div/button'))).click()
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[2]/div/label/input"))).click()
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[1]/fieldset/div[1]/button"))).click()
-        print("Authentication request sent, press twice (10s)")
+        click.echo("Trying to authenticate...")
+        WebDriverWait(webDriver, 20).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//iframe[@id='duo_iframe']")))
+        WebDriverWait(webDriver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div[4]/div/div/div/button'))).click()
+        WebDriverWait(webDriver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[2]/div/label/input"))).click()
+        WebDriverWait(webDriver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[1]/fieldset/div[1]/button"))).click()
+        click.echo("Authentication request sent, press twice (10s)")
         time.sleep(10)
         
     webDriver.get(url)
@@ -184,7 +192,7 @@ def isFull(webDriver):
         return True
 
 def loadREM(webDriver):
-    print("Loading REM...")
+    click.echo("Loading REM...")
     webDriver.get("https://wrem.sis.yorku.ca/Apps/WebObjects/REM.woa/wa/DirectAction/rem")
     select_element = WebDriverWait(webDriver, 60).until(EC.visibility_of_element_located((By.NAME, "5.5.1.27.1.11.0")))
 
@@ -198,7 +206,7 @@ def loadREM(webDriver):
     time.sleep(3)
 
 def loadVSB(webDriver, cat):
-    print("Loading VSB...")
+    click.echo("Loading VSB...")
     webDriver.get("https://schedulebuilder.yorku.ca/vsb/")
     time.sleep(3)
     webDriver.find_element(By.XPATH, '//*[@id="code_number"]').send_keys(cat)
@@ -207,7 +215,7 @@ def loadVSB(webDriver, cat):
     time.sleep(2)
     webDriver.find_element(By.XPATH, '//*[@id="addCourseButton"]').click()
     time.sleep(3)
-    print(webDriver.current_url)
+    click.echo(webDriver.current_url)
     return webDriver.current_url
 
 
@@ -226,59 +234,132 @@ watchlist = [["C57E01", 'A']]
         3101 M (X87W02) TO 3101 Z (S81Q02)
 '''
 
+@click.group()
+def cli():
+    try:
+        env_file_path = Path(".env")
+        env_file_path.touch(mode=0o600, exist_ok=False)
+        click.echo(".env file created")
+    except:
+        pass
+
+@cli.command()
+def set_interval():
+    pass
+
+@cli.command()
+def list():
+    pass
 
 
-options = Options()
-#options.add_argument("--headless")
-options.add_argument('--no-sandbox')
-options.add_argument('--disable-dev-shm-usage')
+@cli.command()
+def add():
+    pass
 
-path = "/snap/bin/geckodriver"  # specify the path to your geckodriver
-driver_service = Service(executable_path=path)
+@cli.command()
+def remove():
+    pass
 
-driver = webdriver.Firefox(options=options, service=driver_service)
-
-login(driver, "https://schedulebuilder.yorku.ca/vsb/")
-
-linkDict = {}
-
-print("Fetching course code URLs...")
-for entry in watchlist:
-    cat, action = entry
-    linkDict[cat] = loadVSB(driver, cat)
+@click.command()
+@click.argument('email')
+def set_email(email):
+    env_file_path = Path(".env")
+    # Create the file if it does not exist.
+    env_file_path.touch(mode=0o600, exist_ok=False)
+    # Save some values to the file.
+    set_key(dotenv_path=env_file_path, key_to_set="EMAIL", value_to_set=email)
 
 
-time.sleep(4)
-startTime = datetime.now().time()
-while (len(watchlist) != 0):
+@click.command()
+@click.argument('username')
+def set_user(username):
+    env_file_path = Path(".env")
+    # Save some values to the file.
+    set_key(dotenv_path=env_file_path, key_to_set="PPY_USERNAME", value_to_set=username)
+
+
+@click.command()
+@click.option("--password", prompt=True, hide_input=True)
+def set_pass(password):
+    env_file_path = Path(".env")
+    # Save some values to the file.
+    set_key(dotenv_path=env_file_path, key_to_set="PPY_PASSWORD", value_to_set=password)
+
+#def set_path():
+    
+
+@click.command()
+@click.option('--headless', is_flag=True, help="Run CourseSnipe without displaying browser", default=False, show_default=True)
+def run(headless):
+    options = Options()
+    if headless:
+        options.add_argument("--headless")
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+
+    path = "/snap/bin/geckodriver"  # fix this to not be hardcoded, find path automatically somehow
+    driver_service = Service(executable_path=path)
+
+    driver = webdriver.Firefox(options=options, service=driver_service)
+
+    login(driver, "https://schedulebuilder.yorku.ca/vsb/")
+
+    linkDict = {}
+
+    click.echo("Fetching course code URLs...")
+
     for entry in watchlist:
         cat, action = entry
-        if action == 'A':
-            driver.get(linkDict[cat])
-            full = isFull(driver)
-            if (not full):
-                print(f"Attempting to enroll into {cat}")
-                loadREM(driver)
-                add_course(cat)
-                watchlist.remove(entry)
-            else:
-                print(f"Course {cat} is full, pinging again in 60 seconds")
-                time.sleep(5)
-        try:
-            username = driver.find_element(By.XPATH, "//*[@id='mli']")
-            password = driver.find_element(By.XPATH, "//*[@id='password']")
-            print("Booted from VSB, relogging")
-            login(driver, "https://schedulebuilder.yorku.ca/vsb/", True)
-        except:
-            pass
-        try:
-            banned = ( driver.find_element(By.XPATH, '/html/body/h1').text == "Forbidden" )
-            if (banned):
-                print(f"Banned from VSB, total duration of session {datetime.now().time() - startTime}")
-                driver.quit()
-                exit()
-        except:
-            pass
-        time.sleep(200 + random.randint(-10,20)) # Randomness to make behaviour look human
+        linkDict[cat] = loadVSB(driver, cat)
 
-driver.quit()
+
+    time.sleep(4)
+    startTime = datetime.now().time()
+    while (len(watchlist) != 0):
+        for entry in watchlist:
+            cat, action = entry
+            if action == 'A':
+                driver.get(linkDict[cat])
+                full = isFull(driver)
+                if (not full):
+                    click.echo(f"Attempting to enroll into {cat}")
+                    loadREM(driver)
+                    add_course(cat, driver)
+                    watchlist.remove(entry)
+                else:
+                    click.echo(f"Course {cat} is full, pinging again in 60 seconds")
+                    time.sleep(5)
+            try:
+                username = driver.find_element(By.XPATH, "//*[@id='mli']")
+                password = driver.find_element(By.XPATH, "//*[@id='password']")
+                click.echo("Booted from VSB, relogging")
+                login(driver, "https://schedulebuilder.yorku.ca/vsb/", True)
+            except:
+                pass
+            try:
+                banned = ( driver.find_element(By.XPATH, '/html/body/h1').text == "Forbidden" )
+                if (banned):
+                    click.echo(f"Banned from VSB, total duration of session {datetime.now().time() - startTime}")
+                    driver.quit()
+                    exit()
+            except:
+                pass
+            time.sleep(200 + random.randint(-10,20)) # Randomness to make behaviour look human
+
+    driver.quit()
+
+
+cli.add_command(run)
+cli.add_command(set_email)
+cli.add_command(set_pass)
+cli.add_command(set_user)
+cli.add_command(set_interval)
+cli.add_command(add)
+cli.add_command(remove)
+cli.add_command(list)
+
+if __name__ == "__main__":
+    cli()
+
+
+
