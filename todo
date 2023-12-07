@@ -1,18 +1,20 @@
 To do:
 
 CLI interface (add GUI later, probably not necessary)
-	-headless option, enabled by default
-	-option to list courses
+	-headless option, enabled by default ✓
+	-option to list courses ✓
 	
-	-option to add course
-	-option to transfer course section
-	-option to remove course
+	-option to add course ✓
+	-option to transfer course section ✓
+	-option to remove course ✓
 	
-	-option to set email
-	-option to set time interval (by default: 120 seconds)
-	-option to set user
-	-option to set password
+	-option to set email ✓
+	-option to set time interval (by default: 120 seconds) ✓
+	-option to set user ✓
+	-option to set password ✓
 	-option to input path (so no need to guess)
+
+Integrate CLI with existing script
 
 Integrate transfer functionality
 
@@ -22,3 +24,5 @@ Add support for Fedora, Windows, Mac?
 	- just need to find path of geckodriver automatically
 
 Integrate exchange functionality (might be unwise but worth a try)
+
+Add hints to CLI commands for ease of use

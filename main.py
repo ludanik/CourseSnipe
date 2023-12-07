@@ -271,7 +271,8 @@ def list():
     # If courses file is empty
 
     if (path.stat().st_size == 0):
-        click.echo("No courses are currently being monitored. Add courses with {insert file command later}")
+        click.echo("No courses are currently being monitored.")
+        click.echo("hint: Add courses with 'command add course'")
         f.close()
         exit()
 
@@ -285,7 +286,9 @@ def list():
             print(f"{i}: {arr[1]} (transferring from {arr[0]})")
        
     f.close()
-    
+
+    click.echo("hint: Remove an entry with 'command remove ENTRY_NUMBER' eg. 'command remove 0'.")
+
     
 
 @cli.command()
@@ -297,7 +300,8 @@ def add(course):
     f = open("courses.txt", "a")
     f.write(f"{course},A\n")
     f.close()
-    click.echo("Course {course} successfully added to the list. View list with ")
+    click.echo(f"Course {course} successfully added to the list.")
+    click.echo(f"hint: View course list with 'command list'.")
 
 @cli.command()
 @click.argument('removed_course')
@@ -307,18 +311,28 @@ def transfer(removed_course, added_course):
     f.write(f"{removed_course},{added_course},T\n")
     f.close()
 
-    click.echo(f"Transfer from {removed_course} to {added_course} successfully added to the list. View list with")
+    click.echo(f"Transfer from {removed_course} to {added_course} successfully added to the list.")
+    click.echo(f"hint: View list with 'command list'.")
 
 @cli.command()
 @click.argument('entry_number', type=int)
 def remove(entry_number):
 
+    f = open("courses.txt", "r")
+
+    # Check if courses file is empty
+    path = Path("courses.txt")
+    if (path.stat().st_size == 0):
+        click.echo("No courses are currently being monitored. Add courses with 'command add course'")
+        f.close()
+        exit()
+
     # Read course information, apply removal
 
-    f = open("courses.txt", "r")
     arr = []
     for line in f:
         arr.append(line)
+    click.echo(f"Entry {arr[entry_number]} removed")
     arr.remove(arr[entry_number])
     f.close()
 
@@ -328,6 +342,8 @@ def remove(entry_number):
     for line in arr:
         f.write(line)
     f.close()
+
+   
 
 @click.command()
 @click.argument('email')
