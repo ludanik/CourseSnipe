@@ -236,36 +236,103 @@ watchlist = [["C57E01", 'A']]
 
 @click.group()
 def cli():
+
+    # Create .env if it doesn't exist
     try:
         env_file_path = Path(".env")
+        # Create an .env file if it doesn't exist
         env_file_path.touch(mode=0o600, exist_ok=False)
-        click.echo(".env file created")
+    except:
+        pass
+
+    # Create courses.txt if it doesn't exist
+
+    try:
+        f = open("courses.txt", "x")
     except:
         pass
 
 @cli.command()
-def set_interval():
-    pass
+@click.argument('interval', default=120)
+def set_interval(interval):
+    env_file_path = Path(".env")
+    # Save some values to the file.
+    set_key(dotenv_path=env_file_path, key_to_set="INTERVAL", value_to_set=interval)
 
 @cli.command()
 def list():
-    pass
 
+    # List all courses in courses.txt
+
+    path = Path("courses.txt")
+    
+    f = open("courses.txt", "r")
+
+    # If courses file is empty
+
+    if (path.stat().st_size == 0):
+        click.echo("No courses are currently being monitored. Add courses with {insert file command later}")
+        f.close()
+        exit()
+
+    click.echo("These courses are currently being monitored:")
+    for i, line in enumerate(f):
+        arr = line.split(",")
+        action = arr[-1]
+        if (action == 'A\n'):
+            print(f"{i}: {arr[0]} (course add)")
+        if (action == 'T\n'):
+            print(f"{i}: {arr[1]} (transferring from {arr[0]})")
+       
+    f.close()
+    
+    
 
 @cli.command()
-def add():
-    pass
+@click.argument('course')
+def add(course):
+
+    # Append new course to end of file
+
+    f = open("courses.txt", "a")
+    f.write(f"{course},A\n")
+    f.close()
+    click.echo("Course {course} successfully added to the list. View list with ")
 
 @cli.command()
-def remove():
-    pass
+@click.argument('removed_course')
+@click.argument('added_course')
+def transfer(removed_course, added_course):
+    f = open("courses.txt", "a")
+    f.write(f"{removed_course},{added_course},T\n")
+    f.close()
+
+    click.echo(f"Transfer from {removed_course} to {added_course} successfully added to the list. View list with")
+
+@cli.command()
+@click.argument('entry_number', type=int)
+def remove(entry_number):
+
+    # Read course information, apply removal
+
+    f = open("courses.txt", "r")
+    arr = []
+    for line in f:
+        arr.append(line)
+    arr.remove(arr[entry_number])
+    f.close()
+
+    # Write new information
+
+    f = open("courses.txt", "w")
+    for line in arr:
+        f.write(line)
+    f.close()
 
 @click.command()
 @click.argument('email')
 def set_email(email):
     env_file_path = Path(".env")
-    # Create the file if it does not exist.
-    env_file_path.touch(mode=0o600, exist_ok=False)
     # Save some values to the file.
     set_key(dotenv_path=env_file_path, key_to_set="EMAIL", value_to_set=email)
 
