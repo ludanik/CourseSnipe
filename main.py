@@ -219,20 +219,7 @@ def loadVSB(webDriver, cat):
     return webDriver.current_url
 
 
-watchlist = [["C57E01", 'A']]
-''' 
-    X44V01 - EECS 3221 A - What I actually want
-    G84J01 - MATH 1014 A - An example of a successful add.
-    F46T02 - EECS 3101 A - An example of a full course.
-    V21Y01 - EECS 2911 M - An example of a reserved course.
 
-    TRANSFER SECTIONS Successfully
-        C27P02 -> C27P03 or C27P04 - EECS 1022
-    TRANSFER TO FULL SECTION
-        1015 A (N59W02) to 1015 B (H06X02)
-    TRANSFER TO RESERVED SECTION
-        3101 M (X87W02) TO 3101 Z (S81Q02)
-'''
 
 @click.group()
 def cli():
@@ -242,6 +229,7 @@ def cli():
         env_file_path = Path(".env")
         # Create an .env file if it doesn't exist
         env_file_path.touch(mode=0o600, exist_ok=False)
+        set_key(dotenv_path=env_file_path, key_to_set="INTERVAL", value_to_set=120)
     except:
         pass
 
@@ -257,7 +245,7 @@ def cli():
 def set_interval(interval):
     env_file_path = Path(".env")
     # Save some values to the file.
-    set_key(dotenv_path=env_file_path, key_to_set="INTERVAL", value_to_set=interval)
+    set_key(dotenv_path=env_file_path, key_to_set="INTERVAL", value_to_set=f"{interval}")
 
 @cli.command()
 def list():
@@ -272,58 +260,74 @@ def list():
 
     if (path.stat().st_size == 0):
         click.echo("No courses are currently being monitored.")
-        click.echo("hint: Add courses with 'command add course'")
+        click.echo("hint: Add courses with 'command add CATALOGUE_NUMBER'")
         f.close()
         exit()
 
     click.echo("These courses are currently being monitored:")
     for i, line in enumerate(f):
         arr = line.split(",")
-        action = arr[-1]
-        if (action == 'A\n'):
+        action = arr[-1].rstrip()
+        if (action == 'A'):
             print(f"{i}: {arr[0]} (course add)")
-        if (action == 'T\n'):
-            print(f"{i}: {arr[1]} (transferring from {arr[0]})")
+        if (action == 'T'):
+            print(f"{i}: {arr[0]} (transferring from {arr[1]})")
        
     f.close()
 
-    click.echo("hint: Remove an entry with 'command remove ENTRY_NUMBER' eg. 'command remove 0'.")
+    click.echo("hint: Remove an entry with 'command remove CATALOGUE_NUMBER' eg. 'command remove H89U02'.")
 
     
 
 @cli.command()
-@click.argument('course')
-def add(course):
+@click.argument('catalogue_number')
+def add(catalogue_number):
 
     # Append new course to end of file
 
     f = open("courses.txt", "a")
-    f.write(f"{course},A\n")
+    f.write(f"{catalogue_number},A\n")
     f.close()
-    click.echo(f"Course {course} successfully added to the list.")
+    click.echo(f"Course {catalogue_number} successfully added to the list.")
     click.echo(f"hint: View course list with 'command list'.")
 
 @cli.command()
-@click.argument('removed_course')
-@click.argument('added_course')
-def transfer(removed_course, added_course):
+@click.argument('catalogue_number')
+def transfer(catalogue_number):
     f = open("courses.txt", "a")
-    f.write(f"{removed_course},{added_course},T\n")
+    f.write(f"{catalogue_number},T\n")
     f.close()
 
-    click.echo(f"Transfer from {removed_course} to {added_course} successfully added to the list.")
+    click.echo(f"Transfer to {catalogue_number} successfully added to the list.")
     click.echo(f"hint: View list with 'command list'.")
 
+
+# Need to add exchange function 
+'''
 @cli.command()
-@click.argument('entry_number', type=int)
-def remove(entry_number):
+@click.argument('added_course')
+@click.argument('removed_course')
+def exchange(removed_course, added_course):
+    f = open("courses.txt", "a")
+    f.write(f"{added_course},{removed_course},T\n")
+    f.close()
+
+    click.echo(f"Exchange to {added_course} from {removed_course} successfully added to the list.")
+    click.echo(f"hint: View list with 'command list'.")
+'''
+
+
+@cli.command()
+@click.argument('catalogue_number', type=str)
+def remove(catalogue_number):
 
     f = open("courses.txt", "r")
 
     # Check if courses file is empty
     path = Path("courses.txt")
     if (path.stat().st_size == 0):
-        click.echo("No courses are currently being monitored. Add courses with 'command add course'")
+        click.echo("No courses are currently being monitored.")
+        click.echo("hint: Add courses with 'command add CATALOGUE_NUMBER'")
         f.close()
         exit()
 
@@ -332,8 +336,13 @@ def remove(entry_number):
     arr = []
     for line in f:
         arr.append(line)
-    click.echo(f"Entry {arr[entry_number]} removed")
-    arr.remove(arr[entry_number])
+
+    for entry in arr:
+        eArr = entry.split(",")
+        if eArr[0] == catalogue_number:
+            arr.remove(entry)
+            break
+    
     f.close()
 
     # Write new information
@@ -342,6 +351,8 @@ def remove(entry_number):
     for line in arr:
         f.write(line)
     f.close()
+
+    click.echo(f"Course {catalogue_number} removed")
 
    
 
@@ -374,6 +385,41 @@ def set_pass(password):
 @click.command()
 @click.option('--headless', is_flag=True, help="Run CourseSnipe without displaying browser", default=False, show_default=True)
 def run(headless):
+    path = Path("courses.txt")
+    
+    f = open("courses.txt", "r")
+
+    # Check if courses file is empty
+
+    if (path.stat().st_size == 0):
+        click.echo("No courses are currently being monitored.")
+        click.echo("hint: Add courses with 'command add CATALOGUE_NUMBER'")
+        f.close()
+        exit()
+
+    # Check if user and password have been set
+
+    if (os.getenv("PPY_USERNAME") == "" or os.getenv("PPY_USERNAME") == None):
+        click.echo("A Passport York username has not been set")
+        click.echo("hint: Set your username with 'command set-user USERNAME'")
+        f.close()
+        exit()
+
+    if (os.getenv("PPY_PASSWORD") == "" or os.getenv("PPY_PASSWORD") == None):
+        click.echo("A Passport York password has not been set")
+        click.echo("hint: Set your password with 'command set-pass'")
+        f.close()
+        exit()
+
+    # Read course information from courses.txt
+    watchlist = []
+    for line in f:
+        line = line.rstrip()
+        line = line.split(",")
+        watchlist.append(line)
+
+    # Start geckodriver
+
     options = Options()
     if headless:
         options.add_argument("--headless")
@@ -387,47 +433,56 @@ def run(headless):
 
     login(driver, "https://schedulebuilder.yorku.ca/vsb/")
 
+
+    # Fetch VSB URLs for course codes
+    
     linkDict = {}
 
     click.echo("Fetching course code URLs...")
 
     for entry in watchlist:
-        cat, action = entry
+        cat = entry[0]
         linkDict[cat] = loadVSB(driver, cat)
-
 
     time.sleep(4)
     startTime = datetime.now().time()
     while (len(watchlist) != 0):
         for entry in watchlist:
-            cat, action = entry
-            if action == 'A':
-                driver.get(linkDict[cat])
-                full = isFull(driver)
-                if (not full):
-                    click.echo(f"Attempting to enroll into {cat}")
-                    loadREM(driver)
+            cat, action = entry[0], entry[-1]
+            driver.get(linkDict[cat])
+            full = isFull(driver)
+            if (not full):
+                click.echo(f"Attempting to enroll into {cat}")
+                loadREM(driver)
+                if action == 'A':
                     add_course(cat, driver)
-                    watchlist.remove(entry)
-                else:
-                    click.echo(f"Course {cat} is full, pinging again in 60 seconds")
-                    time.sleep(5)
+                elif action == 'T':
+                    transfer_course(cat, driver)
+                watchlist.remove(entry)
+            else:
+                click.echo(f"Course {cat} is full, pinging next course in {os.getenv('INTERVAL')} seconds")
+                time.sleep(5)
             try:
+                # Check for login elements, if they exist then user was booted from VSB
                 username = driver.find_element(By.XPATH, "//*[@id='mli']")
                 password = driver.find_element(By.XPATH, "//*[@id='password']")
-                click.echo("Booted from VSB, relogging")
+                click.echo("Booted from VSB, relogging...")
                 login(driver, "https://schedulebuilder.yorku.ca/vsb/", True)
             except:
                 pass
             try:
+                # Check for 403 error, if they exist then user was banned from VSB
                 banned = ( driver.find_element(By.XPATH, '/html/body/h1').text == "Forbidden" )
                 if (banned):
-                    click.echo(f"Banned from VSB, total duration of session {datetime.now().time() - startTime}")
+                    click.echo(f"Banned from VSB, total duration of session {datetime.now().time() - startTime}.")
+                    click.echo(f"Interval between pings for this session was set to {os.getenv('INTERVAL')} seconds.")
+                    click.echo("hint: To avoid bans, we recommend setting the interval to 120 seconds, at minimum.")
+                    click.echo("hint: It may be possible to circumvent a ban by restarting your router.")
                     driver.quit()
                     exit()
             except:
                 pass
-            time.sleep(200 + random.randint(-10,20)) # Randomness to make behaviour look human
+            time.sleep(int(os.getenv("INTERVAL")) + random.randint(-10,20)) # Randomness to make behaviour look human
 
     driver.quit()
 

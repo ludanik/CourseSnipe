@@ -14,7 +14,8 @@ CLI interface (add GUI later, probably not necessary)
 	-option to set password ✓
 	-option to input path (so no need to guess)
 
-Integrate CLI with existing script
+	-add hints to cli commands for ease of use
+	-integrate cli with existing script
 
 Integrate transfer functionality
 
@@ -25,4 +26,6 @@ Add support for Fedora, Windows, Mac?
 
 Integrate exchange functionality (might be unwise but worth a try)
 
-Add hints to CLI commands for ease of use
+Course priority function
+	-because interval is so long, it will be nice to prioritize certain courses over others
+	-ex. course 1 is checked 70% of the time, course 2 is checked 30% of the time
