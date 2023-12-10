@@ -4,6 +4,12 @@
 # Setuptools:
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 #
+# Packaging projects in Python:
+# https://packaging.python.org/en/latest/tutorials/packaging-projects/
+#
+# Packaging and distributing projects in Python:
+# https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
+#
 # Start virtual environment:
 # . .venv/bin/activate
 
@@ -260,7 +266,7 @@ def list():
 
     if (path.stat().st_size == 0):
         click.echo("No courses are currently being monitored.")
-        click.echo("hint: Add courses with 'command add CATALOGUE_NUMBER'")
+        click.echo("hint: Add courses with 'csnipe add CATALOGUE_NUMBER'")
         f.close()
         exit()
 
@@ -275,7 +281,7 @@ def list():
        
     f.close()
 
-    click.echo("hint: Remove an entry with 'command remove CATALOGUE_NUMBER' eg. 'command remove H89U02'.")
+    click.echo("hint: Remove an entry with 'csnipe remove CATALOGUE_NUMBER' eg. 'coursesnipe remove H89U02'.")
 
     
 
@@ -289,7 +295,7 @@ def add(catalogue_number):
     f.write(f"{catalogue_number},A\n")
     f.close()
     click.echo(f"Course {catalogue_number} successfully added to the list.")
-    click.echo(f"hint: View course list with 'command list'.")
+    click.echo(f"hint: View course list with 'csnipe list'.")
 
 @cli.command()
 @click.argument('catalogue_number')
@@ -299,7 +305,7 @@ def transfer(catalogue_number):
     f.close()
 
     click.echo(f"Transfer to {catalogue_number} successfully added to the list.")
-    click.echo(f"hint: View list with 'command list'.")
+    click.echo(f"hint: View list with 'coursesnipe list'.")
 
 
 # Need to add exchange function 
@@ -313,7 +319,7 @@ def exchange(removed_course, added_course):
     f.close()
 
     click.echo(f"Exchange to {added_course} from {removed_course} successfully added to the list.")
-    click.echo(f"hint: View list with 'command list'.")
+    click.echo(f"hint: View list with 'coursesnipe list'.")
 '''
 
 
@@ -327,7 +333,7 @@ def remove(catalogue_number):
     path = Path("courses.txt")
     if (path.stat().st_size == 0):
         click.echo("No courses are currently being monitored.")
-        click.echo("hint: Add courses with 'command add CATALOGUE_NUMBER'")
+        click.echo("hint: Add courses with 'coursesnipe add CATALOGUE_NUMBER'")
         f.close()
         exit()
 
@@ -393,7 +399,7 @@ def run(headless):
 
     if (path.stat().st_size == 0):
         click.echo("No courses are currently being monitored.")
-        click.echo("hint: Add courses with 'command add CATALOGUE_NUMBER'")
+        click.echo("hint: Add courses with 'coursesnipe add CATALOGUE_NUMBER'")
         f.close()
         exit()
 
@@ -401,13 +407,13 @@ def run(headless):
 
     if (os.getenv("PPY_USERNAME") == "" or os.getenv("PPY_USERNAME") == None):
         click.echo("A Passport York username has not been set")
-        click.echo("hint: Set your username with 'command set-user USERNAME'")
+        click.echo("hint: Set your username with 'coursesnipe set-user USERNAME'")
         f.close()
         exit()
 
     if (os.getenv("PPY_PASSWORD") == "" or os.getenv("PPY_PASSWORD") == None):
         click.echo("A Passport York password has not been set")
-        click.echo("hint: Set your password with 'command set-pass'")
+        click.echo("hint: Set your password with 'coursesnipe set-pass'")
         f.close()
         exit()
 

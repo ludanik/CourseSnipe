@@ -5,10 +5,6 @@ import  ssl, smtplib, os, email.utils
 
 load_dotenv()
 
-
-# Author: Mickey Byalsky
-# https://github.com/mickeybyalsky
-
 def send_email(message):
     email_sender = os.getenv("EMAIL_SENDER")
     email_password = os.getenv("EMAIL_PASSWORD")
