@@ -25,6 +25,8 @@ from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
 from datetime import datetime
 
+import pickle
+
 from dotenv import load_dotenv
 from dotenv import set_key
 import time, os
@@ -34,6 +36,14 @@ load_dotenv()
 
 send_sms_message = False
 send_email_message = False
+
+def store_cookies(driver):
+    pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
+
+def load_cookies(driver):
+    cookies = pickle.load(open("cookies.pkl", "rb"))
+    for cookie in cookies:
+        driver.add_cookie(cookie)
 
 def add_course(cat, driver):
     #add button
@@ -159,7 +169,7 @@ def transfer_course(cat, driver):
         #click.echo result
 
 def login(webDriver, url, noDuo=False):
-    click.echo("Logging in...")
+    click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Logging in...")
     webDriver.set_window_size(1200, 1000)
     webDriver.get(url)
     #fill username
@@ -178,19 +188,19 @@ def login(webDriver, url, noDuo=False):
 
     #duo 2fa
     if (not noDuo):
-        click.echo("Trying to authenticate...")
+        click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Trying to authenticate...")
         WebDriverWait(webDriver, 20).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//iframe[@id='duo_iframe']")))
         WebDriverWait(webDriver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div[4]/div/div/div/button'))).click()
         WebDriverWait(webDriver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[2]/div/label/input"))).click()
         WebDriverWait(webDriver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[1]/fieldset/div[1]/button"))).click()
-        click.echo("Authentication request sent, press twice (10s)")
+        click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Authentication request sent, press twice (10s)")
         time.sleep(10)
         
     webDriver.get(url)
 
 def isFull(webDriver):
-    #courseDiv= WebDriverWait(webDriver, 60).until(EC.visibility_of_element_located((By.CLASS_NAME, "")))
-    time.sleep(5)
+    WebDriverWait(webDriver, 60).until(EC.visibility_of_element_located((By.CLASS_NAME, "legend_box")))
+    time.sleep(3)
     try:
         webDriver.find_element(By.CLASS_NAME, "seatText")
         return False
@@ -198,7 +208,7 @@ def isFull(webDriver):
         return True
 
 def loadREM(webDriver):
-    click.echo("Loading REM...")
+    click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Loading REM...")
     webDriver.get("https://wrem.sis.yorku.ca/Apps/WebObjects/REM.woa/wa/DirectAction/rem")
     select_element = WebDriverWait(webDriver, 60).until(EC.visibility_of_element_located((By.NAME, "5.5.1.27.1.11.0")))
 
@@ -212,7 +222,7 @@ def loadREM(webDriver):
     time.sleep(3)
 
 def loadVSB(webDriver, cat):
-    click.echo("Loading VSB...")
+    click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Loading VSB...")
     webDriver.get("https://schedulebuilder.yorku.ca/vsb/")
     time.sleep(3)
     webDriver.find_element(By.XPATH, '//*[@id="code_number"]').send_keys(cat)
@@ -249,9 +259,20 @@ def cli():
 @cli.command()
 @click.argument('interval', default=120)
 def set_interval(interval):
+
+    # Warning for adventurous users
+    if interval < 90:
+        click.echo("WARNING: Setting a interval of less than 90 seconds will get you banned from VSB")
+        click.echo("WARNING: While the length of a ban is variable,")
+        click.echo("WARNING: some people have been banned for as long as a month.")
+        click.echo("WARNING: There is no means of appealing a ban.")
+        click.echo("WARNING: We strongly recommend you set this value to at least 90 seconds.")
+        click.confirm('Are you sure you want to continue?', abort=True)
+
     env_file_path = Path(".env")
     # Save some values to the file.
     set_key(dotenv_path=env_file_path, key_to_set="INTERVAL", value_to_set=f"{interval}")
+    click.echo(f"Interval set to {interval}.")
 
 @cli.command()
 def list():
@@ -277,11 +298,12 @@ def list():
         if (action == 'A'):
             print(f"{i}: {arr[0]} (course add)")
         if (action == 'T'):
-            print(f"{i}: {arr[0]} (transferring from {arr[1]})")
+            print(f"{i}: {arr[0]} (section transfer)")
        
     f.close()
 
-    click.echo("hint: Remove an entry with 'csnipe remove CATALOGUE_NUMBER' eg. 'coursesnipe remove H89U02'.")
+    click.echo("hint: Remove an entry with 'csnipe remove CATALOGUE_NUMBER'")
+    click.echo("hint: eg. 'coursesnipe remove H89U02'.")
 
     
 
@@ -308,7 +330,7 @@ def transfer(catalogue_number):
     click.echo(f"hint: View list with 'coursesnipe list'.")
 
 
-# Need to add exchange function 
+# Need to add exchange function first
 '''
 @cli.command()
 @click.argument('added_course')
@@ -379,7 +401,7 @@ def set_user(username):
 
 
 @click.command()
-@click.option("--password", prompt=True, hide_input=True)
+@click.password_option()
 def set_pass(password):
     env_file_path = Path(".env")
     # Save some values to the file.
@@ -432,7 +454,11 @@ def run(headless):
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
 
-    path = "/snap/bin/geckodriver"  # fix this to not be hardcoded, find path automatically somehow
+    # fix this to not be hardcoded, find path automatically somehow
+    path = "/snap/bin/geckodriver"  
+    
+    
+    
     driver_service = Service(executable_path=path)
 
     driver = webdriver.Firefox(options=options, service=driver_service)
@@ -444,7 +470,7 @@ def run(headless):
     
     linkDict = {}
 
-    click.echo("Fetching course code URLs...")
+    click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Fetching course code URLs...")
 
     for entry in watchlist:
         cat = entry[0]
@@ -458,7 +484,7 @@ def run(headless):
             driver.get(linkDict[cat])
             full = isFull(driver)
             if (not full):
-                click.echo(f"Attempting to enroll into {cat}")
+                click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Attempting to enroll into {cat}")
                 loadREM(driver)
                 if action == 'A':
                     add_course(cat, driver)
@@ -466,8 +492,9 @@ def run(headless):
                     transfer_course(cat, driver)
                 watchlist.remove(entry)
             else:
-                click.echo(f"Course {cat} is full, pinging next course in {os.getenv('INTERVAL')} seconds")
+                click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Course {cat} is full, checking next course in {os.getenv('INTERVAL')} seconds")
                 time.sleep(5)
+
             try:
                 # Check for login elements, if they exist then user was booted from VSB
                 username = driver.find_element(By.XPATH, "//*[@id='mli']")
@@ -476,6 +503,7 @@ def run(headless):
                 login(driver, "https://schedulebuilder.yorku.ca/vsb/", True)
             except:
                 pass
+
             try:
                 # Check for 403 error, if they exist then user was banned from VSB
                 banned = ( driver.find_element(By.XPATH, '/html/body/h1').text == "Forbidden" )
@@ -488,7 +516,8 @@ def run(headless):
                     exit()
             except:
                 pass
-            time.sleep(int(os.getenv("INTERVAL")) + random.randint(-10,20)) # Randomness to make behaviour look human
+            # Sleep for chosen user interval, add randomness to make behaviour look human
+            time.sleep(int(os.getenv("INTERVAL")) + random.randint(-10,20)) 
 
     driver.quit()
 
