@@ -199,8 +199,6 @@ def login(webDriver, url, noDuo=False):
     webDriver.get(url)
 
 def isFull(webDriver):
-    WebDriverWait(webDriver, 60).until(EC.visibility_of_element_located((By.CLASS_NAME, "legend_box")))
-    time.sleep(3)
     try:
         webDriver.find_element(By.CLASS_NAME, "seatText")
         return False
@@ -482,6 +480,7 @@ def run(headless):
         for entry in watchlist:
             cat, action = entry[0], entry[-1]
             driver.get(linkDict[cat])
+            time.sleep(5)
             full = isFull(driver)
             if (not full):
                 click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Attempting to enroll into {cat}")
@@ -499,7 +498,7 @@ def run(headless):
                 # Check for login elements, if they exist then user was booted from VSB
                 username = driver.find_element(By.XPATH, "//*[@id='mli']")
                 password = driver.find_element(By.XPATH, "//*[@id='password']")
-                click.echo("Booted from VSB, relogging...")
+                click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Booted from VSB, relogging...")
                 login(driver, "https://schedulebuilder.yorku.ca/vsb/", True)
             except:
                 pass
