@@ -8,4 +8,4 @@ courses.txt
 /CourseSnipe/.venv
 /CourseSnipe/.env
 /CourseSnipe/*.env
-
+*.venv

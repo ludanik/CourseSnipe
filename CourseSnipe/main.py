@@ -32,6 +32,8 @@ from dotenv import set_key
 import time, os
 import functions
 
+from webdriver_manager.firefox import GeckoDriverManager
+
 load_dotenv()
 
 send_sms_message = False
@@ -205,7 +207,7 @@ def isFull(webDriver):
     except:
         return True
 
-def loadREM(webDriver):
+def load_rem(webDriver):
     click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Loading REM...")
     webDriver.get("https://wrem.sis.yorku.ca/Apps/WebObjects/REM.woa/wa/DirectAction/rem")
     select_element = WebDriverWait(webDriver, 60).until(EC.visibility_of_element_located((By.NAME, "5.5.1.27.1.11.0")))
@@ -219,7 +221,7 @@ def loadREM(webDriver):
     webDriver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table/tbody/tr[3]/td[2]/input').click()
     time.sleep(3)
 
-def loadVSB(webDriver, cat):
+def load_vsb(webDriver, cat):
     click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Loading VSB...")
     webDriver.get("https://schedulebuilder.yorku.ca/vsb/")
     time.sleep(3)
@@ -452,14 +454,7 @@ def run(headless):
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
 
-    # fix this to not be hardcoded, find path automatically somehow
-    path = "/snap/bin/geckodriver"  
-    
-    
-    
-    driver_service = Service(executable_path=path)
-
-    driver = webdriver.Firefox(options=options, service=driver_service)
+    driver = webdriver.Firefox(service=webdriver.firefox.service.Service(GeckoDriverManager().install()), options=options)
 
     login(driver, "https://schedulebuilder.yorku.ca/vsb/")
 
@@ -472,7 +467,7 @@ def run(headless):
 
     for entry in watchlist:
         cat = entry[0]
-        linkDict[cat] = loadVSB(driver, cat)
+        linkDict[cat] = load_vsb(driver, cat)
 
     time.sleep(4)
     startTime = datetime.now().time()
@@ -484,7 +479,7 @@ def run(headless):
             full = isFull(driver)
             if (not full):
                 click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Attempting to enroll into {cat}")
-                loadREM(driver)
+                load_rem(driver)
                 if action == 'A':
                     add_course(cat, driver)
                 elif action == 'T':
