@@ -9,3 +9,5 @@ courses.txt
 /CourseSnipe/.env
 /CourseSnipe/*.env
 *.venv
+*.pkl
+*chromedata

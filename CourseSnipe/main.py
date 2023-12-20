@@ -33,19 +33,15 @@ import time, os
 import functions
 
 from webdriver_manager.firefox import GeckoDriverManager
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
+import platform
 
 load_dotenv()
 
 send_sms_message = False
 send_email_message = False
-
-def store_cookies(driver):
-    pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
-
-def load_cookies(driver):
-    cookies = pickle.load(open("cookies.pkl", "rb"))
-    for cookie in cookies:
-        driver.add_cookie(cookie)
 
 def add_course(cat, driver):
     #add button
@@ -170,91 +166,26 @@ def transfer_course(cat, driver):
             click.echo(string)
         #click.echo result
 
-def login(webDriver, url, noDuo=False):
-    click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Logging in...")
-    webDriver.set_window_size(1200, 1000)
-    webDriver.get(url)
-    #fill username
-    username = webDriver.find_element(By.XPATH, "//*[@id='mli']")
-    username.send_keys(os.getenv("PPY_USERNAME"))
-    time.sleep(3)
-
-    #fill password
-    password = webDriver.find_element(By.XPATH, "//*[@id='password']")
-    password.send_keys(os.getenv("PPY_PASSWORD"))
-    time.sleep(3)
-
-    #click on submit button
-    webDriver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[1]/form/div[2]/div[2]/p[2]/input").click()
-    time.sleep(3)
-
-    #duo 2fa
-    if (not noDuo):
-        click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Trying to authenticate...")
-        WebDriverWait(webDriver, 20).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//iframe[@id='duo_iframe']")))
-        WebDriverWait(webDriver, 20).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div[4]/div/div/div/button'))).click()
-        WebDriverWait(webDriver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[2]/div/label/input"))).click()
-        WebDriverWait(webDriver, 20).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[1]/fieldset/div[1]/button"))).click()
-        click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Authentication request sent, press twice (10s)")
-        time.sleep(10)
-        
-    webDriver.get(url)
-
-def isFull(webDriver):
-    try:
-        webDriver.find_element(By.CLASS_NAME, "seatText")
-        return False
-    except:
-        return True
-
-def load_rem(webDriver):
-    click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Loading REM...")
-    webDriver.get("https://wrem.sis.yorku.ca/Apps/WebObjects/REM.woa/wa/DirectAction/rem")
-    select_element = WebDriverWait(webDriver, 60).until(EC.visibility_of_element_located((By.NAME, "5.5.1.27.1.11.0")))
-
-    # Create a Select object
-    select = Select(select_element)
-    select.select_by_value("3")
-
-    time.sleep(3)
-
-    webDriver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table/tbody/tr[3]/td[2]/input').click()
-    time.sleep(3)
-
-def load_vsb(webDriver, cat):
-    click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Loading VSB...")
-    webDriver.get("https://schedulebuilder.yorku.ca/vsb/")
-    time.sleep(3)
-    webDriver.find_element(By.XPATH, '//*[@id="code_number"]').send_keys(cat)
-    time.sleep(2)
-    webDriver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[4]/div/table/tbody/tr/td[1]/div[4]/div[1]/div[2]/div[2]/div[3]/label').click()
-    time.sleep(2)
-    webDriver.find_element(By.XPATH, '//*[@id="addCourseButton"]').click()
-    time.sleep(3)
-    click.echo(webDriver.current_url)
-    return webDriver.current_url
-
-
-
 
 @click.group()
 def cli():
-
     # Create .env if it doesn't exist
     try:
         env_file_path = Path(".env")
-        # Create an .env file if it doesn't exist
         env_file_path.touch(mode=0o600, exist_ok=False)
-        set_key(dotenv_path=env_file_path, key_to_set="INTERVAL", value_to_set=120)
+        set_key(dotenv_path=env_file_path, key_to_set="INTERVAL", value_to_set="120")
+        print(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Fresh install, generating new files...")
     except:
         pass
 
     # Create courses.txt if it doesn't exist
 
     try:
-        f = open("courses.txt", "x")
+        open("courses.txt", "x")
     except:
         pass
+
+
 
 @cli.command()
 @click.argument('interval', default=120)
@@ -407,8 +338,110 @@ def set_pass(password):
     # Save some values to the file.
     set_key(dotenv_path=env_file_path, key_to_set="PPY_PASSWORD", value_to_set=password)
 
-#def set_path():
+def isFull(webDriver):
+    try:
+        webDriver.find_element(By.CLASS_NAME, "seatText")
+        return False
+    except:
+        return True
+
+def load_rem(webDriver):
+    click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Loading REM...")
+    webDriver.get("https://wrem.sis.yorku.ca/Apps/WebObjects/REM.woa/wa/DirectAction/rem")
+    select_element = WebDriverWait(webDriver, 60).until(EC.visibility_of_element_located((By.NAME, "5.5.1.27.1.11.0")))
+
+    # Create a Select object
+    select = Select(select_element)
+    select.select_by_value("3")
+
+    time.sleep(3)
+
+    webDriver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table/tbody/tr[3]/td[2]/input').click()
+    time.sleep(3)
+
+def load_vsb(webDriver, cat):
+    click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Loading VSB...")
+    webDriver.get("https://schedulebuilder.yorku.ca/vsb/")
+    time.sleep(3)
+    webDriver.find_element(By.XPATH, '//*[@id="code_number"]').send_keys(cat)
+    time.sleep(2)
+    webDriver.find_element(By.XPATH,'/html/body/div[1]/div[3]/div[4]/div/table/tbody/tr/td[1]/div[4]/div[1]/div[2]/div[2]/div[3]/label').click()
+    time.sleep(2)
+    webDriver.find_element(By.XPATH, '//*[@id="addCourseButton"]').click()
+    time.sleep(3)
+    click.echo(webDriver.current_url)
+    return webDriver.current_url
+
+def store_cookies(driver):
+    cookies = driver.get_cookies()
+    for c in cookies:
+        print(c)
+    pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
+
+def load_cookies(driver):
+    cookies = pickle.load(open("cookies.pkl", "rb"))
+    for cookie in cookies:
+        if cookie['name'] != 'JSESSIONID':
+            driver.add_cookie(cookie)
+
+def login(webDriver, url, noDuo=False):
+    click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Logging in...")
+
+    webDriver.set_window_size(1200, 1000)
+    webDriver.get(url)
+
+    time.sleep(3)
+
+    #fill username
+    username = webDriver.find_element(By.XPATH, "//*[@id='mli']")
+    username.send_keys(os.getenv("PPY_USERNAME"))
+    time.sleep(3)
+
+    #fill password
+    password = webDriver.find_element(By.XPATH, "//*[@id='password']")
+    password.send_keys(os.getenv("PPY_PASSWORD"))
+    time.sleep(3)
+
+    #click on submit button
+    webDriver.find_element(By.XPATH, "/html/body/div[3]/div[2]/div[1]/form/div[2]/div[2]/p[2]/input").click()
+    time.sleep(3)
+
+    #duo 2fa
+    if (not noDuo):
+        click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Trying to authenticate...")
+        try:
+            WebDriverWait(webDriver, 5).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//iframe[@id='duo_iframe']")))
+            time.sleep(1)
+            WebDriverWait(webDriver, 5).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div[4]/div/div/div/button'))).click()
+            time.sleep(1)
+            WebDriverWait(webDriver, 5).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[2]/div/label/input"))).click()
+            time.sleep(1)
+            WebDriverWait(webDriver, 5).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[1]/fieldset/div[1]/button"))).click()
+            click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Authentication request sent, press twice (10s)")
+            time.sleep(10)
+        except:
+            pass
+
+    click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Authenticated.")
+        
+    webDriver.get(url)
+
+    time.sleep(3)
+
+# I tried using a docstring here, like a normal person, 
+# but it crashes citing a unicode error, only God knows why
     
+#def get_chrome_path():
+    # Windows: %LOCALAPPDATA%\Google\Chrome\User Data
+    # MacOS: ~/Library/Application Support/Google/Chrome
+    # Linux: ~/.config/google-chrome
+
+ #   if platform.system == "Windows":
+  #      return r"%LOCALAPPDATA%\Google\Chrome\User Data"
+   # elif platform.system == "Darwin": # 
+    #    return r"~/Library/Application Support/Google/Chrome"
+    #return r"~/.config/google-chrome"
+
 
 @click.command()
 @click.option('--headless', is_flag=True, help="Run CourseSnipe without displaying browser", default=False, show_default=True)
@@ -447,14 +480,27 @@ def run(headless):
         watchlist.append(line)
 
     # Start geckodriver
+    # Doing it this way means we don't need to specify a path for geckodriver or Firefox binary
 
+    options = webdriver.ChromeOptions()
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument(rf"user-data-dir=chromedata") #e.g. C:\Users\You\AppData\Local\Google\Chrome\User Data
+    # need to find a way to dynamically find config path for Google Chrome
+    options.add_argument(r'profile-directory=Default') #e.g. Profile 3
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options )
+    
+    '''
     options = Options()
     if headless:
         options.add_argument("--headless")
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
 
-    driver = webdriver.Firefox(service=webdriver.firefox.service.Service(GeckoDriverManager().install()), options=options)
+    driver = webdriver.Firefox(options=options, service=Service(GeckoDriverManager().install()))
+    '''
+
+    
 
     login(driver, "https://schedulebuilder.yorku.ca/vsb/")
 
@@ -471,6 +517,7 @@ def run(headless):
 
     time.sleep(4)
     startTime = datetime.now().time()
+
     while (len(watchlist) != 0):
         for entry in watchlist:
             cat, action = entry[0], entry[-1]
@@ -486,7 +533,7 @@ def run(headless):
                     transfer_course(cat, driver)
                 watchlist.remove(entry)
             else:
-                click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Course {cat} is full, checking next course in {os.getenv('INTERVAL')} seconds")
+                click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Course {cat} is full, checking next course in {os.getenv("INTERVAL")} seconds")
                 time.sleep(5)
 
             try:
