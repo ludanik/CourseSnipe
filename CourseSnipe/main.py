@@ -25,14 +25,11 @@ from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
 from datetime import datetime
 
-import pickle
-
 from dotenv import load_dotenv
 from dotenv import set_key
 import time, os
 import functions
 
-from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
@@ -261,7 +258,7 @@ def transfer(catalogue_number):
     click.echo(f"hint: View list with 'coursesnipe list'.")
 
 
-# Need to add exchange function first
+# Need to add exchange function in backend first
 '''
 @cli.command()
 @click.argument('added_course')
@@ -372,18 +369,6 @@ def load_vsb(webDriver, cat):
     click.echo(webDriver.current_url)
     return webDriver.current_url
 
-def store_cookies(driver):
-    cookies = driver.get_cookies()
-    for c in cookies:
-        print(c)
-    pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
-
-def load_cookies(driver):
-    cookies = pickle.load(open("cookies.pkl", "rb"))
-    for cookie in cookies:
-        if cookie['name'] != 'JSESSIONID':
-            driver.add_cookie(cookie)
-
 def login(webDriver, url, noDuo=False):
     click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Logging in...")
 
@@ -427,21 +412,6 @@ def login(webDriver, url, noDuo=False):
     webDriver.get(url)
 
     time.sleep(3)
-
-# I tried using a docstring here, like a normal person, 
-# but it crashes citing a unicode error, only God knows why
-    
-#def get_chrome_path():
-    # Windows: %LOCALAPPDATA%\Google\Chrome\User Data
-    # MacOS: ~/Library/Application Support/Google/Chrome
-    # Linux: ~/.config/google-chrome
-
- #   if platform.system == "Windows":
-  #      return r"%LOCALAPPDATA%\Google\Chrome\User Data"
-   # elif platform.system == "Darwin": # 
-    #    return r"~/Library/Application Support/Google/Chrome"
-    #return r"~/.config/google-chrome"
-
 
 @click.command()
 @click.option('--headless', is_flag=True, help="Run CourseSnipe without displaying browser", default=False, show_default=True)
@@ -489,18 +459,6 @@ def run(headless):
     # need to find a way to dynamically find config path for Google Chrome
     options.add_argument(r'profile-directory=Default') #e.g. Profile 3
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options )
-    
-    '''
-    options = Options()
-    if headless:
-        options.add_argument("--headless")
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-
-    driver = webdriver.Firefox(options=options, service=Service(GeckoDriverManager().install()))
-    '''
-
-    
 
     login(driver, "https://schedulebuilder.yorku.ca/vsb/")
 
