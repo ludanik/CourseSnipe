@@ -37,6 +37,8 @@ import platform
 
 load_dotenv()
 
+COMMAND_NAME = "csnipe"
+
 send_sms_message = False
 send_email_message = False
 
@@ -73,7 +75,7 @@ def add_course(cat, driver):
             curr_course = driver.find_element(By.XPATH, '/html/body/form/div[1]/table/tbody/tr[4]/td[2]/table/tbody/tr/td/table[2]/tbody/tr[4]/td[2]/span').text
             cur_course = curr_course[3:12] + " "+ curr_course[21:22]
             #click.echo(f"The course {cur_course} has been successfully added.\nTHIS ACTION HAS FINANCIAL IMPACT TO YOUR FINANCIAL ACCOUNT\nVISIT https://sfs.yorku.ca FOR UPDATED TUTION INFORMATION.")
-            body=f"\nThe course {cur_course} has been successfully added.\nTHIS ACTION HAS FINANCIAL IMPACT TO YOUR STUDENT FINANCIAL ACCOUNT.VISIT HTTPS://SFS.YORKU.CA FOR UPDATED TUTION INFORMATION."
+            body=f"\nThe course {cur_course} has been successfully added.\nTHIS ACTION HAS FINANCIAL IMPACT TO YOUR STUDENT FINANCIAL ACCOUNT. VISIT HTTPS://SFS.YORKU.CA FOR UPDATED TUTION INFORMATION."
             click.echo(body)
             time.sleep(3)
             driver.find_element(By.NAME, '5.1.27.23.9').click()
@@ -136,7 +138,7 @@ def transfer_course(cat, driver):
             cur_course = curr_course[3:12] + " "+ curr_course[21:22]
             
             body=f"\nYou have successfully been transferred into {cur_course}.\nTHIS ACTION HAS FINANCIAL IMPACT TO YOUR STUDENT FINANCIAL ACCOUNT. VISIT HTTPS://SFS.YORKU.CA FOR UPDATED TUTION INFORMATION.",
-            
+            click.echo(body)
             if send_sms_message: functions.send_sms(body)
             if send_email_message: functions.send_email(body)
 
@@ -215,7 +217,7 @@ def list():
 
     if (path.stat().st_size == 0):
         click.echo("No courses are currently being monitored.")
-        click.echo("hint: Add courses with 'csnipe add CATALOGUE_NUMBER'")
+        click.echo(f"hint: Add courses with '{COMMAND_NAME} add CATALOGUE_NUMBER'")
         f.close()
         exit()
 
@@ -230,8 +232,8 @@ def list():
        
     f.close()
 
-    click.echo("hint: Remove an entry with 'csnipe remove CATALOGUE_NUMBER'")
-    click.echo("hint: eg. 'coursesnipe remove H89U02'.")
+    click.echo(f"hint: Remove an entry with '{COMMAND_NAME} remove CATALOGUE_NUMBER'")
+    click.echo(f"hint: eg. '{COMMAND_NAME} remove H89U02'.")
 
     
 
@@ -245,7 +247,7 @@ def add(catalogue_number):
     f.write(f"{catalogue_number},A\n")
     f.close()
     click.echo(f"Course {catalogue_number} successfully added to the list.")
-    click.echo(f"hint: View course list with 'csnipe list'.")
+    click.echo(f"hint: View course list with '{COMMAND_NAME} list'.")
 
 @cli.command()
 @click.argument('catalogue_number')
@@ -255,7 +257,7 @@ def transfer(catalogue_number):
     f.close()
 
     click.echo(f"Transfer to {catalogue_number} successfully added to the list.")
-    click.echo(f"hint: View list with 'coursesnipe list'.")
+    click.echo(f"hint: View list with '{COMMAND_NAME} list'.")
 
 
 # Need to add exchange function in backend first
@@ -269,7 +271,7 @@ def exchange(removed_course, added_course):
     f.close()
 
     click.echo(f"Exchange to {added_course} from {removed_course} successfully added to the list.")
-    click.echo(f"hint: View list with 'coursesnipe list'.")
+    click.echo(f"hint: View list with '{COMMAND_NAME} list'.")
 '''
 
 
@@ -283,7 +285,7 @@ def remove(catalogue_number):
     path = Path("courses.txt")
     if (path.stat().st_size == 0):
         click.echo("No courses are currently being monitored.")
-        click.echo("hint: Add courses with 'coursesnipe add CATALOGUE_NUMBER'")
+        click.echo(f"hint: Add courses with '{COMMAND_NAME} add CATALOGUE_NUMBER'")
         f.close()
         exit()
 
@@ -335,7 +337,7 @@ def set_pass(password):
     # Save some values to the file.
     set_key(dotenv_path=env_file_path, key_to_set="PPY_PASSWORD", value_to_set=password)
 
-def isFull(webDriver):
+def is_full(webDriver):
     try:
         webDriver.find_element(By.CLASS_NAME, "seatText")
         return False
@@ -414,7 +416,7 @@ def login(webDriver, url, noDuo=False):
     time.sleep(3)
 
 @click.command()
-@click.option('--headless', is_flag=True, help="Run CourseSnipe without displaying browser", default=False, show_default=True)
+@click.option("-h", '--headless', is_flag=True, help=f"Run {COMMAND_NAME} without displaying browser", default=False)
 def run(headless):
     path = Path("courses.txt")
     
@@ -424,7 +426,7 @@ def run(headless):
 
     if (path.stat().st_size == 0):
         click.echo("No courses are currently being monitored.")
-        click.echo("hint: Add courses with 'coursesnipe add CATALOGUE_NUMBER'")
+        click.echo(f"hint: Add courses with '{COMMAND_NAME} add CATALOGUE_NUMBER'")
         f.close()
         exit()
 
@@ -432,13 +434,13 @@ def run(headless):
 
     if (os.getenv("PPY_USERNAME") == "" or os.getenv("PPY_USERNAME") == None):
         click.echo("A Passport York username has not been set")
-        click.echo("hint: Set your username with 'coursesnipe set-user USERNAME'")
+        click.echo(f"hint: Set your username with '{COMMAND_NAME} set-user USERNAME'")
         f.close()
         exit()
 
     if (os.getenv("PPY_PASSWORD") == "" or os.getenv("PPY_PASSWORD") == None):
         click.echo("A Passport York password has not been set")
-        click.echo("hint: Set your password with 'coursesnipe set-pass'")
+        click.echo(f"hint: Set your password with '{COMMAND_NAME} set-pass'")
         f.close()
         exit()
 
@@ -455,9 +457,10 @@ def run(headless):
     options = webdriver.ChromeOptions()
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    options.add_argument(rf"user-data-dir=chromedata") #e.g. C:\Users\You\AppData\Local\Google\Chrome\User Data
-    # need to find a way to dynamically find config path for Google Chrome
-    options.add_argument(r'profile-directory=Default') #e.g. Profile 3
+    if headless:
+        options.add_argument("--headless")
+    options.add_argument(rf"user-data-dir=chromedata")
+    options.add_argument(r'profile-directory=Default') 
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options )
 
     login(driver, "https://schedulebuilder.yorku.ca/vsb/")
@@ -481,7 +484,7 @@ def run(headless):
             cat, action = entry[0], entry[-1]
             driver.get(linkDict[cat])
             time.sleep(5)
-            full = isFull(driver)
+            full = is_full(driver)
             if (not full):
                 click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Attempting to enroll into {cat}")
                 load_rem(driver)
@@ -491,7 +494,7 @@ def run(headless):
                     transfer_course(cat, driver)
                 watchlist.remove(entry)
             else:
-                click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Course {cat} is full, checking next course in {os.getenv("INTERVAL")} seconds")
+                click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Course {cat} is full, checking next course in {os.getenv('INTERVAL')} seconds")
                 time.sleep(5)
 
             try:
