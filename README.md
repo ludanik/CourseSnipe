@@ -1,6 +1,6 @@
 CourseSnipe
 ==================
-A CLI utility, written in Python, which allows you to monitor courses and enroll automatically.
+A CLI utility, written in Python, which allows you to monitor courses and enroll automatically through REM.
 
 ## Getting Started
 
@@ -28,6 +28,31 @@ $ csnipe add CATALOGUE_NUMBER
 ```shell script
 $ csnipe run
 ```
+
+
+
+## Additional Commands
+
+To remove a course, do:
+
+```shell script
+$ csnipe remove CATALOGUE_NUMBER
+```
+
+
+To view your monitored courses, do:
+
+```shell script
+$ csnipe list
+```
+
+
+If you don't want to see a browser, do:
+
+```shell script
+$ csnipe run -h
+```
+
 
 ## License
 
