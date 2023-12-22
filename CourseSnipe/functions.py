@@ -1,7 +1,7 @@
 from selenium.webdriver.support import expected_conditions as EC
 from dotenv import load_dotenv
 from email.message import EmailMessage
-import  ssl, smtplib, os, email.utils
+import ssl, smtplib, os, email.utils
 
 load_dotenv()
 

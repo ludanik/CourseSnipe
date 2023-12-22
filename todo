@@ -14,25 +14,6 @@ Add session persistence, so user doesn't have to authenticate with Duo every tim
 	and often contradictory
 	-need to test on other machines and os
 
-CLI interface (add GUI later, probably not necessary)
-	-headless option, enabled by default ✓
-	-option to list courses ✓
-	
-	-option to add course ✓
-	-option to transfer course section ✓
-	-option to remove course ✓
-	
-	-option to set email ✓
-	-option to set time interval (by default: 120 seconds) ✓
-	-option to set user ✓
-	-option to set password ✓
-	-option to input path (so no need to guess)
-
-	-add hints to cli commands for ease of use ✓
-	-integrate cli with existing script ✓
-
-Integrate transfer functionality
-
 Email/SMS upon course enrollment (probably just email)
 
 Integrate exchange functionality (might be unwise but worth a try)

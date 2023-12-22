@@ -1,17 +1,15 @@
 # Click documentation:
 # https://click.palletsprojects.com/en/8.1.x/#documentation
 #
-# Setuptools:
-# https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
-#
-# Packaging projects in Python:
-# https://packaging.python.org/en/latest/tutorials/packaging-projects/
-#
 # Packaging and distributing projects in Python:
 # https://packaging.python.org/en/latest/guides/distributing-packages-using-setuptools/
 #
-# Start virtual environment:
+# Make a new virtual environment for testing
+# rm -r .venv
+# python3 -m venv .venv
 # . .venv/bin/activate
+#
+
 
 from pathlib import Path
 import random
@@ -28,7 +26,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from dotenv import set_key
 import time, os
-import functions
+#import functions
 
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
@@ -168,6 +166,10 @@ def transfer_course(cat, driver):
 
 @click.group()
 def cli():
+    """
+    CLI utility for automated enrollment with REM
+    """
+
     # Create .env if it doesn't exist
     try:
         env_file_path = Path(".env")
@@ -189,14 +191,17 @@ def cli():
 @cli.command()
 @click.argument('interval', default=120)
 def set_interval(interval):
+    """
+    Set ping interval to INTERVAL
+    """
 
     # Warning for adventurous users
     if interval < 90:
-        click.echo("WARNING: Setting a interval of less than 90 seconds will get you banned from VSB")
-        click.echo("WARNING: While the length of a ban is variable,")
-        click.echo("WARNING: some people have been banned for as long as a month.")
-        click.echo("WARNING: There is no means of appealing a ban.")
-        click.echo("WARNING: We strongly recommend you set this value to at least 90 seconds.")
+        click.secho("WARNING: Setting a interval of less than 90 seconds will get you banned from VSB", fg='red', bold=True)
+        click.secho("WARNING: While the length of a ban is variable,",fg='red', bold=True)
+        click.secho("WARNING: some people have been banned for as long as a month.",fg='red', bold=True)
+        click.secho("WARNING: There is no means of appealing a ban.",fg='red', bold=True)
+        click.secho("WARNING: We strongly recommend you set this value to at least 90 seconds.",fg='red', bold=True)
         click.confirm('Are you sure you want to continue?', abort=True)
 
     env_file_path = Path(".env")
@@ -206,7 +211,9 @@ def set_interval(interval):
 
 @cli.command()
 def list():
-
+    """
+    List all currently monitored courses
+    """
     # List all courses in courses.txt
 
     path = Path("courses.txt")
@@ -217,7 +224,7 @@ def list():
 
     if (path.stat().st_size == 0):
         click.echo("No courses are currently being monitored.")
-        click.echo(f"hint: Add courses with '{COMMAND_NAME} add CATALOGUE_NUMBER'")
+        click.secho(f"hint: Add courses with '{COMMAND_NAME} add CATALOGUE_NUMBER'", fg='yellow')
         f.close()
         exit()
 
@@ -232,32 +239,41 @@ def list():
        
     f.close()
 
-    click.echo(f"hint: Remove an entry with '{COMMAND_NAME} remove CATALOGUE_NUMBER'")
-    click.echo(f"hint: eg. '{COMMAND_NAME} remove H89U02'.")
+    click.secho(f"hint: Remove an entry with '{COMMAND_NAME} remove CATALOGUE_NUMBER'", fg='yellow')
+    click.secho(f"hint: eg. '{COMMAND_NAME} remove H89U02'.", fg='yellow')
 
     
 
 @cli.command()
 @click.argument('catalogue_number')
 def add(catalogue_number):
+    """
+    Add CATALOGUE_NUMBER (cat# of course) to the list of courses
 
+    CATALOGUE_NUMBER is the catalogue number of the course you want to add
+    """
     # Append new course to end of file
 
     f = open("courses.txt", "a")
     f.write(f"{catalogue_number},A\n")
     f.close()
     click.echo(f"Course {catalogue_number} successfully added to the list.")
-    click.echo(f"hint: View course list with '{COMMAND_NAME} list'.")
+    click.secho(f"hint: View course list with '{COMMAND_NAME} list'.", fg='yellow')
 
 @cli.command()
 @click.argument('catalogue_number')
 def transfer(catalogue_number):
+    """
+    Add a transfer into CATALOGUE_NUMBER (cat# of course) to the list
+
+    CATALOGUE_NUMBER is the catalogue number of the course you want to transfer into
+    """
     f = open("courses.txt", "a")
     f.write(f"{catalogue_number},T\n")
     f.close()
 
     click.echo(f"Transfer to {catalogue_number} successfully added to the list.")
-    click.echo(f"hint: View list with '{COMMAND_NAME} list'.")
+    click.secho(f"hint: View list with '{COMMAND_NAME} list'.", fg='yellow')
 
 
 # Need to add exchange function in backend first
@@ -278,6 +294,11 @@ def exchange(removed_course, added_course):
 @cli.command()
 @click.argument('catalogue_number', type=str)
 def remove(catalogue_number):
+    """
+    Remove CATALOGUE_NUMBER (cat# of course) from the list
+
+    CATALOGUE_NUMBER is the catalogue number of the course you want to remove
+    """
 
     f = open("courses.txt", "r")
 
@@ -285,7 +306,7 @@ def remove(catalogue_number):
     path = Path("courses.txt")
     if (path.stat().st_size == 0):
         click.echo("No courses are currently being monitored.")
-        click.echo(f"hint: Add courses with '{COMMAND_NAME} add CATALOGUE_NUMBER'")
+        click.secho(f"hint: Add courses with '{COMMAND_NAME} add CATALOGUE_NUMBER'", fg='yellow')
         f.close()
         exit()
 
@@ -325,6 +346,9 @@ def set_email(email):
 @click.command()
 @click.argument('username')
 def set_user(username):
+    """
+    Set Passport York username to USERNAME
+    """
     env_file_path = Path(".env")
     # Save some values to the file.
     set_key(dotenv_path=env_file_path, key_to_set="PPY_USERNAME", value_to_set=username)
@@ -333,6 +357,9 @@ def set_user(username):
 @click.command()
 @click.password_option()
 def set_pass(password):
+    """
+    Set Passport York password (no argument)
+    """
     env_file_path = Path(".env")
     # Save some values to the file.
     set_key(dotenv_path=env_file_path, key_to_set="PPY_PASSWORD", value_to_set=password)
@@ -372,7 +399,7 @@ def load_vsb(webDriver, cat):
     return webDriver.current_url
 
 def login(webDriver, url, noDuo=False):
-    click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Logging in...")
+    click.secho(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Logging in...")
 
     webDriver.set_window_size(1200, 1000)
     webDriver.get(url)
@@ -416,8 +443,13 @@ def login(webDriver, url, noDuo=False):
     time.sleep(3)
 
 @click.command()
-@click.option("-h", '--headless', is_flag=True, help=f"Run {COMMAND_NAME} without displaying browser", default=False)
+@click.option("-h", '--headless', is_flag=True, help=f"Run CourseSnipe without displaying browser", default=False)
 def run(headless):
+    """
+    Start CourseSnipe
+    """
+
+
     path = Path("courses.txt")
     
     f = open("courses.txt", "r")
@@ -427,6 +459,7 @@ def run(headless):
     if (path.stat().st_size == 0):
         click.echo("No courses are currently being monitored.")
         click.echo(f"hint: Add courses with '{COMMAND_NAME} add CATALOGUE_NUMBER'")
+        click.secho(f"hint: eg. '{COMMAND_NAME} add H89U02'.", fg='yellow')
         f.close()
         exit()
 
@@ -434,13 +467,13 @@ def run(headless):
 
     if (os.getenv("PPY_USERNAME") == "" or os.getenv("PPY_USERNAME") == None):
         click.echo("A Passport York username has not been set")
-        click.echo(f"hint: Set your username with '{COMMAND_NAME} set-user USERNAME'")
+        click.secho(f"hint: Set your username with '{COMMAND_NAME} set-user USERNAME'", fg='yellow')
         f.close()
         exit()
 
     if (os.getenv("PPY_PASSWORD") == "" or os.getenv("PPY_PASSWORD") == None):
         click.echo("A Passport York password has not been set")
-        click.echo(f"hint: Set your password with '{COMMAND_NAME} set-pass'")
+        click.secho(f"hint: Set your password with '{COMMAND_NAME} set-pass'",fg='yellow')
         f.close()
         exit()
 
@@ -512,14 +545,14 @@ def run(headless):
                 if (banned):
                     click.echo(f"Banned from VSB, total duration of session {datetime.now().time() - startTime}.")
                     click.echo(f"Interval between pings for this session was set to {os.getenv('INTERVAL')} seconds.")
-                    click.echo("hint: To avoid bans, we recommend setting the interval to 120 seconds, at minimum.")
-                    click.echo("hint: It may be possible to circumvent a ban by restarting your router.")
+                    click.secho("hint: To avoid bans, we recommend setting the interval to 120 seconds, at minimum.", fg='yellow')
+                    click.secho("hint: It may be possible to circumvent a ban by restarting your router.", fg='yellow')
                     driver.quit()
                     exit()
             except:
                 pass
-            # Sleep for chosen user interval, add randomness to make behaviour look human
-            time.sleep(int(os.getenv("INTERVAL")) + random.randint(-10,20)) 
+            # Sleep for chosen user interval, add slight randomness to make behaviour look human
+            time.sleep(int(os.getenv("INTERVAL")) + random.randint(-10,10)) 
 
     driver.quit()
 

@@ -1,13 +1,7 @@
 *.env
-.env
-.venv
-__pycache__/
-courses.txt
-/CourseSnipe/courses.txt
-/CourseSnipe/__pycache__/
-/CourseSnipe/.venv
-/CourseSnipe/.env
-/CourseSnipe/*.env
+*__pycache__/
+*courses.txt
 *.venv
-*.pkl
 *chromedata
+*CourseSnipe.egg-info
+*dist
