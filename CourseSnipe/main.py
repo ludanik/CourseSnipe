@@ -225,6 +225,7 @@ def list():
     if (path.stat().st_size == 0):
         click.echo("No courses are currently being monitored.")
         click.secho(f"hint: Add courses with '{COMMAND_NAME} add CATALOGUE_NUMBER'", fg='yellow')
+        click.secho(f"hint: eg. '{COMMAND_NAME} add H89U02'.", fg='yellow')
         f.close()
         exit()
 
@@ -257,7 +258,7 @@ def add(catalogue_number):
     f = open("courses.txt", "a")
     f.write(f"{catalogue_number},A\n")
     f.close()
-    click.echo(f"Course {catalogue_number} successfully added to the list.")
+    click.secho(f"Course {catalogue_number} successfully added to the list.")
     click.secho(f"hint: View course list with '{COMMAND_NAME} list'.", fg='yellow')
 
 @cli.command()
@@ -307,6 +308,7 @@ def remove(catalogue_number):
     if (path.stat().st_size == 0):
         click.echo("No courses are currently being monitored.")
         click.secho(f"hint: Add courses with '{COMMAND_NAME} add CATALOGUE_NUMBER'", fg='yellow')
+        click.secho(f"hint: eg. '{COMMAND_NAME} add H89U02'.", fg='yellow')
         f.close()
         exit()
 
@@ -442,6 +444,20 @@ def login(webDriver, url, noDuo=False):
 
     time.sleep(3)
 
+def get_chrome_path():
+    """
+    Get path to Chrome data directory 
+    """
+    p = platform.system()
+    click.echo(f"Platform: {p}")
+    dir_path = Path().absolute()
+    if p == "Windows":
+        return os.path.join(dir_path, "chromedata")
+    elif p == "Darwin":
+        return r"~/Library/Application Support/Google/Chrome"
+    return r"chromedata"
+
+
 @click.command()
 @click.option("-h", '--headless', is_flag=True, help=f"Run CourseSnipe without displaying browser", default=False)
 def run(headless):
@@ -458,7 +474,7 @@ def run(headless):
 
     if (path.stat().st_size == 0):
         click.echo("No courses are currently being monitored.")
-        click.echo(f"hint: Add courses with '{COMMAND_NAME} add CATALOGUE_NUMBER'")
+        click.secho(f"hint: Add courses with '{COMMAND_NAME} add CATALOGUE_NUMBER'", fg='yellow')
         click.secho(f"hint: eg. '{COMMAND_NAME} add H89U02'.", fg='yellow')
         f.close()
         exit()
@@ -492,7 +508,7 @@ def run(headless):
     options.add_argument('--disable-dev-shm-usage')
     if headless:
         options.add_argument("--headless")
-    options.add_argument(rf"user-data-dir=chromedata")
+    options.add_argument(rf"user-data-dir={get_chrome_path()}")
     options.add_argument(r'profile-directory=Default') 
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options )
 
