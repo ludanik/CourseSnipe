@@ -1,18 +1,7 @@
 To do:
 
-Add support for Fedora, Windows, Mac? 
-        - just need to find path of geckodriver automatically
-	- seems to work but i should test on Windows as well
-
-Add session persistence, so user doesn't have to authenticate with Duo every time
-	-tried with firefox profiles, no documentation so unclear what to 
-	actually do
-	-tried with cookies, but the right data isn't captured so session	
-	isn't saved
-	-tried with chrome profiles, but chrome doesn't want to save session 
-	data when opened by selenium for some reason. documentation is unclear
-	and often contradictory
-	-need to test on other machines and os
+Add support for MacOS
+	-need someone with a mac to test
 
 Email/SMS upon course enrollment (probably just email)
 
