@@ -5,7 +5,11 @@ Add support for MacOS
 
 Email/SMS upon course enrollment (probably just email)
 
-Integrate exchange functionality (might be unwise but worth a try)
+Improvements to CLI
+	-support for multiple args in add and remove functions (to enroll full s	chedule at once, for example)
+
+Integrate exchange functionality
+	-just need to add a corresponding selenium function, cli function alread	y exists
 
 Course priority function
 	-because interval is so long, it will be nice to prioritize certain cour	ses over others
