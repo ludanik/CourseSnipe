@@ -10,26 +10,26 @@ Many improvements over similar tools have been made in CourseSnipe. By checking 
 1. In your terminal, write the following to install CourseSnipe
 
 ```shell script
-pip install CourseSnipe
+$ pip install CourseSnipe
 ```
 
 2. Set your username and password
 
 ```shell script
-csnipe set-user USERNAME
-csnipe set-pass
+$ csnipe set-user USERNAME
+$ csnipe set-pass
 ```
 
 3. Add your desired course(s), where CATALOGUE_NUMBER is the catalogue number of the course you want to add 
 
 ```shell script
-csnipe add CATALOGUE_NUMBER
+$ csnipe add CATALOGUE_NUMBER
 ```
 
 4. Run CourseSnipe to begin active monitoring
 
 ```shell script
-csnipe run
+$ csnipe run
 ```
 
 The first time you run this script, you will have to authenticate with Duo. Afterwards, this will not be necessary.
@@ -39,25 +39,25 @@ The first time you run this script, you will have to authenticate with Duo. Afte
 To remove a course from the list of monitored courses, do:
 
 ```shell script
-csnipe remove CATALOGUE_NUMBER
+$ csnipe remove CATALOGUE_NUMBER
 ```
 
 To add a transfer into a given section, do:
 
 ```shell script
-csnipe transfer CATALOGUE_NUMBER
+$ csnipe transfer CATALOGUE_NUMBER
 ```
 
 To view your monitored courses, do:
 
 ```shell script
-csnipe list
+$ csnipe list
 ```
 
 If you don't want to see the browser when running CourseSnipe, do:
 
 ```shell script
-csnipe run -h
+$ csnipe run -h
 ```
 
 ## License
