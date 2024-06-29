@@ -380,7 +380,7 @@ def load_rem(webDriver):
 
     # Create a Select object
     select = Select(select_element)
-    select.select_by_value("3")
+    select.select_by_value("2")
 
     time.sleep(3)
 
@@ -428,6 +428,7 @@ def login(webDriver, url, noDuo=False):
         try:
             WebDriverWait(webDriver, 5).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//iframe[@id='duo_iframe']")))
             time.sleep(1)
+            click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] First time authenticating, please check Duo.")
             WebDriverWait(webDriver, 5).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div[4]/div/div/div/button'))).click()
             time.sleep(1)
             WebDriverWait(webDriver, 5).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[2]/div/label/input"))).click()
@@ -462,7 +463,7 @@ def get_chrome_path():
 @click.option("-h", '--headless', is_flag=True, help=f"Run CourseSnipe without displaying browser", default=False)
 def run(headless):
     """
-    Start CourseSnipe
+    Start active monitoring of courses in list
     """
 
 

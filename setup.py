@@ -7,7 +7,7 @@ import setuptools
 setuptools.setup(
     name="CourseSnipe",
     packages=setuptools.find_packages(),
-    version="1.0.4",
+    version="1.0.5",
     license="MIT",
     description="CLI utility for automated enrollment with REM",
     author="Ian Ludanik",

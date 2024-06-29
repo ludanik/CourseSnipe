@@ -1,4 +1,6 @@
-To do:
+To do: 
+
+Use an actual database (mySQL) instead of a text file to store course information
 
 Add support for Fedora, Windows, Mac? 
         - just need to find path of geckodriver automatically
