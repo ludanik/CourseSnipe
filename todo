@@ -1,5 +1,16 @@
 To do: 
 
+Next project: CoursePool
+	-client/server model
+	-clients connect to server, authenticate and indicate readiness
+	-server tells clients when its their turn to provide course information
+	-client sents to server information on course availablity
+	-server distributes information to all clients
+	-next client is told to provide information
+	-theoretical polling time of of 90/n seconds, 
+	 where n is number of clients
+	-i.e. with 90 clients, can check course info once a second
+
 Use an actual database (mySQL) instead of a text file to store course information
 
 Add support for MacOS
@@ -8,11 +19,11 @@ Add support for MacOS
 Email/SMS upon course enrollment (probably just email)
 
 Improvements to CLI
-	-support for multiple args in add and remove functions (to enroll full s	chedule at once, for example)
+	-support for multiple args in add and remove functions (to enroll full schedule at once, for example)
 
 Integrate exchange functionality
-	-just need to add a corresponding selenium function, cli function alread	y exists
+	-just need to add a corresponding selenium function, cli function already exists
 
 Course priority function
-	-because interval is so long, it will be nice to prioritize certain cour	ses over others
-	-ex. course 1 is checked 70% of the time, course 2 is checked 30% of the 	time
+	-because interval is so long, it will be nice to prioritize certain courses over others
+	-ex. course 1 is checked 70% of the time, course 2 is checked 30% of the time

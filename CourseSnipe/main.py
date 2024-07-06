@@ -426,15 +426,9 @@ def login(webDriver, url, noDuo=False):
     if (not noDuo):
         click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Trying to authenticate...")
         try:
-            WebDriverWait(webDriver, 5).until(EC.frame_to_be_available_and_switch_to_it((By.XPATH,"//iframe[@id='duo_iframe']")))
-            time.sleep(1)
-            click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] First time authenticating, please check Duo.")
-            WebDriverWait(webDriver, 5).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div/div/div[4]/div/div/div/button'))).click()
-            time.sleep(1)
-            WebDriverWait(webDriver, 5).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[2]/div/label/input"))).click()
-            time.sleep(1)
-            WebDriverWait(webDriver, 5).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div/div/div[1]/div/form/div[1]/fieldset/div[1]/button"))).click()
-            click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] Authentication request sent, press twice (10s)")
+            time.sleep(10)
+            #click.echo(f"[{datetime.strftime(datetime.now(), '%H:%M:%S')}] First time authenticating, please check Duo.")
+            WebDriverWait(webDriver, 5).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="trust-browser-button"]'))).click()
             time.sleep(10)
         except:
             pass
